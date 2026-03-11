@@ -262,7 +262,7 @@
 
   .header {
     top: 58px; /* sits below the TopBar */
-    padding: 2px 0px;
+    padding: 6px 0 2px 0;
   }
   .headerContent {
     height: 105px;
