@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import { useEffect, useRef } from 'react'
 import { useLanguage } from '../../lib/LanguageContext'
 import styles from './AboutAward.module.css'
@@ -132,7 +134,7 @@ const content = {
 }
 
 // Section icons map
-const sectionIcons: Record<string, JSX.Element> = {
+const sectionIcons: Record<string, React.ReactElement> = {
   'aa-name': (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
