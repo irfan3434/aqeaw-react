@@ -1,0 +1,903 @@
+/* ===== Wrapper ===== */
+.evWrapper {
+  background: #0d1b2a;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  color: #e8eef9;
+}
+
+:global(html[lang='ar']) .evWrapper {
+  direction: rtl;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== Hero ===== */
+.evHero {
+  position: relative;
+  padding: 80px 20px 60px;
+  background: linear-gradient(135deg, #ffcb00 0%, #1a3f6b 55%, #0d1b2a 100%);
+  text-align: center;
+  overflow: hidden;
+}
+
+.evHeroPattern {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    rgba(255, 255, 255, 0.04) 0% 2%,
+    transparent 2% 4%
+  );
+  z-index: 1;
+}
+
+.evHeroGrain {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='25' cy='25' r='1' fill='white' opacity='0.07'/%3E%3Ccircle cx='75' cy='75' r='1' fill='white' opacity='0.07'/%3E%3Ccircle cx='50' cy='10' r='0.5' fill='white' opacity='0.1'/%3E%3Ccircle cx='10' cy='60' r='0.8' fill='white' opacity='0.05'/%3E%3Ccircle cx='90' cy='40' r='0.6' fill='white' opacity='0.08'/%3E%3C/svg%3E");
+  z-index: 1;
+  pointer-events: none;
+}
+
+.evHeroContent {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.evHeroTitle {
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+  animation: evFadeDown 0.8s ease-out both;
+}
+
+.evHeroSubtitle {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 20px;
+  line-height: 1.6;
+  animation: evFadeDown 0.8s ease-out 0.15s both;
+}
+
+.evHeroDivider {
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffcb00, #c4a21e, transparent);
+  margin: 0 auto;
+  border-radius: 2px;
+  animation: evFadeDown 0.8s ease-out 0.3s both;
+}
+
+/* ===== Navigation ===== */
+.evNav {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  /* 
+   * NOT sticky — sticky causes the first row of photos to sit
+   * at the boundary where the browser's lazy-load threshold fires,
+   * which was the root cause of the missing images bug.
+   * The global Navbar is already fixed, so sticky here is redundant.
+   */
+  padding: 28px 20px 20px;
+  background: #0d1b2a;
+  border-bottom: 1px solid rgba(196, 162, 30, 0.15);
+}
+
+.evNavBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: 2px solid rgba(196, 162, 30, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: #b8cce0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.evNavBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.evNavBtn:hover::before { transform: translateX(100%); }
+
+.evNavBtn:hover {
+  border-color: #c4a21e;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.evNavBtnActive {
+  background: linear-gradient(135deg, #1a3f6b, #3a7cb4);
+  border-color: #c4a21e;
+  color: #fff;
+  transform: scale(1.04);
+  box-shadow: 0 8px 28px rgba(26, 63, 107, 0.5);
+}
+
+.evNavIcon { font-size: 1.1rem; }
+
+/* ===== Content wrapper ===== */
+.evContent {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* 
+ * CRITICAL FIX: evSection must NOT use opacity: 0 at start.
+ * The original `evFadeUp` animation starts at opacity:0 which
+ * causes next/image and browser lazy-loaders to skip images
+ * that are technically "in viewport" but invisible.
+ * We keep the translateY motion but start opacity at 1.
+ */
+.evSection {
+  animation: evSlideUp 0.45s ease-out both;
+}
+
+/* ===== Photo Grid ===== */
+.evPhotoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding: 32px 0 20px;
+}
+
+/*
+ * THE DEFINITIVE FIX for missing first-row images:
+ *
+ * Problem: next/image with `fill` prop requires the parent to have
+ * a computed pixel height at mount. CSS `aspect-ratio` resolves AFTER
+ * the first paint, so at the moment next/image's IntersectionObserver
+ * fires, the container height is 0 → image never loads.
+ * Resizing triggers a reflow which gives the container a real height,
+ * explaining why DevTools resize "fixes" it.
+ *
+ * Solution: Use a plain <img> tag (no IntersectionObserver dependency)
+ * inside a container that gets its height from padding-bottom (resolved
+ * synchronously by the box model before paint). Both techniques together
+ * guarantee images always load on first render.
+ */
+.evPhotoItem {
+  position: relative;
+  /* padding-bottom % is calculated against WIDTH, giving us 4:3 ratio */
+  /* This resolves synchronously — container always has real height */
+  width: 100%;
+  padding-top: 75%; /* 75% of width = 4:3 aspect ratio */
+  height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  background: #1a2a3a;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.evPhotoItem:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.evPhotoItem:focus-visible {
+  outline: 2px solid #ffcb00;
+  outline-offset: 3px;
+}
+
+/* Plain <img> — fills the padding-top container absolutely */
+.evPhotoImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* No opacity tricks — always visible from first paint */
+}
+
+.evPhotoOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(26, 63, 107, 0.88) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.evPhotoItem:hover .evPhotoOverlay { opacity: 1; }
+
+.evPhotoZoomIcon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+.evPhotoLabel {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ===== Article Grid ===== */
+.evArticleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 30px;
+  padding: 32px 0 20px;
+}
+
+.evArticleCard {
+  background: #16263a;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(196, 162, 30, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: evItemIn 0.5s ease-out both;
+}
+
+.evArticleCard:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.5);
+  border-color: rgba(196, 162, 30, 0.35);
+}
+
+/* Article image — explicit height, plain img fills it */
+.evArticleImage {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  overflow: hidden;
+  background: #1a3f6b;
+}
+
+.evArticleImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.evArticleCard:hover .evArticleImage img { transform: scale(1.08); }
+
+.evArticleBadge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: #c4a21e;
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  z-index: 2;
+  box-shadow: 0 3px 10px rgba(196, 162, 30, 0.4);
+}
+
+:global(html[lang='ar']) .evArticleBadge { left: auto; right: 14px; }
+
+.evArticleBody { padding: 24px 24px 20px; }
+
+.evArticleTitle {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 700;
+  color: #e8eef9;
+  margin: 0 0 12px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.evArticleExcerpt {
+  font-size: 0.92rem;
+  color: #8899bb;
+  line-height: 1.7;
+  margin: 0 0 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.evArticleFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+:global(html[lang='ar']) .evArticleFooter { flex-direction: row-reverse; }
+
+.evArticleDate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #5577aa;
+}
+
+.evArticleBtn {
+  background: linear-gradient(135deg, #1a3f6b, #3a7cb4);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.evArticleBtn:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 18px rgba(26, 63, 107, 0.5);
+}
+
+:global(html[lang='ar']) .evArticleBtn:hover { transform: translateX(-4px); }
+
+/* ===== Video Grid ===== */
+.evVideoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 30px;
+  padding: 32px 0 20px;
+}
+
+.evVideoCard {
+  background: #16263a;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(196, 162, 30, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: evItemIn 0.5s ease-out both;
+}
+
+.evVideoCard:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.5);
+  border-color: rgba(196, 162, 30, 0.35);
+}
+
+.evVideoCard:focus-visible {
+  outline: 2px solid #ffcb00;
+  outline-offset: 3px;
+}
+
+/* Explicit px height — plain img fills it reliably */
+.evVideoThumb {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  background: #000;
+  overflow: hidden;
+}
+
+.evVideoThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease, opacity 0.3s ease;
+}
+
+.evVideoCard:hover .evVideoThumb img {
+  transform: scale(1.08);
+  opacity: 0.7;
+}
+
+.evVideoOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+}
+
+.evVideoPlayBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  background: rgba(196, 162, 30, 0.92);
+  border-radius: 50%;
+  z-index: 2;
+  transition: transform 0.3s ease, background 0.3s ease;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.evVideoPlayBtn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 55%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 13px 0 13px 22px;
+  border-color: transparent transparent transparent #fff;
+}
+
+.evVideoCard:hover .evVideoPlayBtn {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: #c4a21e;
+}
+
+.evVideoDuration {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+}
+
+:global(html[lang='ar']) .evVideoDuration { right: auto; left: 12px; }
+
+.evVideoBody { padding: 20px 22px 22px; }
+
+.evVideoTitle {
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  font-weight: 700;
+  color: #e8eef9;
+  margin: 0;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== PDF Grid ===== */
+.evPdfGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 30px;
+  padding: 32px 0 20px;
+}
+
+.evPdfCard {
+  background: #16263a;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(196, 162, 30, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: evItemIn 0.5s ease-out both;
+}
+
+.evPdfCard:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.5);
+  border-color: rgba(196, 162, 30, 0.35);
+}
+
+.evPdfIconArea {
+  position: relative;
+  height: 180px;
+  background: linear-gradient(135deg, #1a3f6b, #3a7cb4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.evPdfPulse {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 70%);
+  animation: evPulse 3s ease-in-out infinite;
+}
+
+@keyframes evPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+
+.evPdfIcon {
+  width: 90px;
+  height: 90px;
+  background: rgba(196, 162, 30, 0.88);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.evPdfCard:hover .evPdfIcon { transform: scale(1.08); }
+
+.evPdfBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 5px 13px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+
+:global(html[lang='ar']) .evPdfBadge { right: auto; left: 14px; }
+
+.evPdfBody { padding: 24px 24px 20px; }
+
+.evPdfTitle {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 700;
+  color: #e8eef9;
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.evPdfDesc {
+  font-size: 0.9rem;
+  color: #8899bb;
+  line-height: 1.65;
+  margin: 0 0 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.evPdfFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+:global(html[lang='ar']) .evPdfFooter { flex-direction: row-reverse; }
+
+.evPdfSize {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #5577aa;
+}
+
+.evPdfBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, #1a3f6b, #3a7cb4);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.evPdfBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(26, 63, 107, 0.5);
+}
+
+/* ===== Load More ===== */
+.evLoadMore {
+  display: block;
+  margin: 44px auto 60px;
+  padding: 16px 48px;
+  background: transparent;
+  color: #e8eef9;
+  border: 2px solid #c4a21e;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.evLoadMore:hover {
+  background: linear-gradient(135deg, #1a3f6b, #3a7cb4);
+  border-color: #3a7cb4;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(26, 63, 107, 0.4);
+}
+
+/* ===== Lightbox ===== */
+.evLightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  animation: evFadeIn 0.25s ease-out;
+  backdrop-filter: blur(12px);
+  padding: 80px 20px 60px;
+}
+
+.evLightboxContent {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: evScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Plain img in lightbox — no sizing constraints */
+.evLightboxImg {
+  max-width: 90vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  object-fit: contain;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+}
+
+.evLightboxClose {
+  position: absolute;
+  top: -52px;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.evLightboxClose:hover {
+  background: rgba(196,162,30,0.85);
+  border-color: #c4a21e;
+  transform: rotate(90deg);
+}
+
+.evLightboxNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+}
+
+.evLightboxNav:hover {
+  background: rgba(196,162,30,0.85);
+  border-color: #c4a21e;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.evLightboxPrev { left: -64px; }
+.evLightboxNext { right: -64px; }
+
+.evLightboxCounter {
+  position: absolute;
+  bottom: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.1);
+  padding: 8px 22px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+/* ===== Video Modal ===== */
+.evVideoModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  padding: 20px;
+  animation: evFadeIn 0.25s ease-out;
+}
+
+.evVideoModalContent {
+  position: relative;
+  width: min(95vw, 1100px);
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+  animation: evScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.evVideoIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.evVideoModalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.evVideoModalClose:hover {
+  background: rgba(196,162,30,0.85);
+  transform: rotate(90deg);
+}
+
+/* ===== Animations ===== */
+@keyframes evFadeDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/*
+ * evSlideUp: starts at opacity 1 (unlike old evFadeUp which started at 0).
+ * Starting at opacity 0 confused lazy-load observers.
+ */
+@keyframes evSlideUp {
+  from { transform: translateY(20px); opacity: 1; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes evItemIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes evFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes evScaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .evHero { padding: 65px 16px 40px; }
+  .evHeroTitle { font-size: 1.5rem; }
+
+  .evNav {
+    gap: 10px;
+    padding: 18px 14px 14px;
+  }
+
+  .evNavBtn {
+    padding: 11px 20px;
+    font-size: 0.85rem;
+  }
+
+  .evContent { padding: 0 14px; }
+
+  .evPhotoGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 20px 0 16px;
+  }
+
+  .evArticleGrid,
+  .evVideoGrid,
+  .evPdfGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 0 16px;
+  }
+
+  .evLightboxPrev { left: 8px; }
+  .evLightboxNext { right: 8px; }
+  .evLightboxClose { top: 8px; right: 8px; }
+  .evLightboxCounter { bottom: 8px; }
+
+  .evVideoModalContent {
+    aspect-ratio: unset;
+    height: 56vw;
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .evNavIcon { display: none; }
+  .evNavBtn  { padding: 10px 16px; font-size: 0.82rem; }
+
+  .evPhotoGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  .evSection,
+  .evArticleCard,
+  .evVideoCard,
+  .evPdfCard {
+    animation: none;
+  }
+  .evHeroTitle,
+  .evHeroSubtitle,
+  .evHeroDivider { animation: none; }
+}

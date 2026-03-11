@@ -1,0 +1,32 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+main {
+  margin-top: 171px; /* 45px TopBar + 115px Navbar */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Arabic font — must be outside body, at root level */
+:lang(ar),
+html[lang="ar"] * {
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+@media (max-width: 768px) {
+  main {
+    margin-top: 110px; /* 45px TopBar + 70px Navbar on mobile */
+  }
+}

@@ -1,0 +1,290 @@
+.skipToContent {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #1a3f6b;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 1003;
+}
+
+.skipToContent:focus {
+  top: 0;
+}
+
+.header { 
+  position: fixed;
+  top: 56px; /* sits below the TopBar */
+  left: 0;
+  right: 0;
+  background: rgba(249, 249, 249, 0.98);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header.scrolled {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+}
+
+.headerWrapper {
+  max-width: 1400px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 115px;
+}
+
+/* Logo */
+.headerLogo {
+  flex-shrink: 0;
+  z-index: 1002;
+}
+
+.headerLogo a {
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.headerLogo a:hover {
+  transform: scale(1.05);
+}
+
+/* Desktop Nav */
+.navDesktop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navDesktop a {
+  width: 162px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: #c4a21e;
+  color: #1a3f6b;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.navDesktop a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.navDesktop a:hover::before {
+  left: 100%;
+}
+
+.navDesktop a:hover {
+  background: #b08c1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(196, 162, 30, 0.3);
+}
+
+/* Ceremony / Events button */
+.ceremonyBtn {
+  background: linear-gradient(135deg, #db5213, #ff6b35) !important;
+  color: #fff !important;
+  box-shadow: 0 0 20px rgba(219, 82, 19, 0.3);
+  animation: ceremonySoftPulse 3s ease-in-out infinite;
+}
+
+.ceremonyBtn:hover {
+  background: linear-gradient(135deg, #c44811, #e55a2b) !important;
+  transform: translateY(-2px) scale(1.05) !important;
+}
+
+@keyframes ceremonySoftPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(219, 82, 19, 0.3); }
+  50%       { box-shadow: 0 0 30px rgba(219, 82, 19, 0.5); }
+}
+
+/* Hamburger */
+.mobileMenuToggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  z-index: 1002;
+}
+
+.hamburger {
+  width: 24px;
+  height: 20px;
+  position: relative;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: #1a3f6b;
+  border-radius: 3px;
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.hamburger span:nth-child(1) { top: 0; }
+.hamburger span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+.hamburger span:nth-child(3) { bottom: 0; }
+
+.mobileMenuToggle.active .hamburger span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.mobileMenuToggle.active .hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobileMenuToggle.active .hamburger span:nth-child(3) {
+  bottom: 50%;
+  transform: translateY(50%) rotate(-45deg);
+}
+
+/* Mobile Nav */
+.navMobile {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: #fff;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.navMobile.noTransition {
+  transition: none !important;
+}
+
+.navMobile.active {
+  transform: translateX(0);
+}
+
+.navMobileContent {
+  padding: 190px 20px 40px;
+}
+
+.navMobileContent a {
+  display: block;
+  padding: 18px 25px;
+  margin-bottom: 10px;
+  background: #c4a21e;
+  color: #1a3f6b;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.navMobileContent a:hover {
+  background: #b08c1a;
+  transform: translateX(5px);
+}
+
+/* Mobile Overlay */
+.mobileOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* RTL */
+:global(html[lang='ar']) .navMobile {
+  transform: translateX(100%);
+}
+
+:global(html[lang='ar']) .navMobile.active {
+  transform: translateX(0);
+}
+
+:global(html[lang='ar']) .navMobileContent a:hover {
+  transform: translateX(-5px);
+}
+
+:global(html[lang='ar']) .navDesktop a {
+  font-size: 16px;
+  padding: 14px 22px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .navDesktop a {
+    padding: 10px 16px;
+    font-size: 13px;
+    width: 130px;
+  }
+
+  .headerContent {
+    height: 110px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .header {
+    top: 58px; /* sits below the TopBar */
+    padding: 2px 0px;
+  }
+  .headerContent {
+    height: 105px;
+    
+  }
+
+  .navDesktop {
+    display: none;
+  }
+
+  .mobileMenuToggle {
+    display: block;
+  }
+
+  .navMobile {
+    display: block;
+  }
+}
+
+/* Accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #c4a21e;
+  outline-offset: 2px;
+}

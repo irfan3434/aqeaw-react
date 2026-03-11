@@ -1,0 +1,133 @@
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #c4a21e;
+  color: #3b3b3b;
+  padding: 12px 20px;
+  z-index: 1100;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.topBarContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0px 0px 0px 12px;
+}
+
+/* RTL — flips padding when Arabic */
+:global(html[lang='ar']) .topBarContainer {
+  padding: 0px 12px 0px 0px;
+  direction: rtl;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+:global(html[lang='ar']) .socialIcons {
+  flex-direction: row-reverse;
+}
+
+.socialIcon {
+  color: #1a3f6b;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.socialIcon:hover {
+  transform: scale(1.2);
+  color: #fff;
+}
+
+.languageSwitcher {
+  display: flex;
+  gap: 8px;
+}
+
+.languageBtn {
+  background-color: #f4f4f4;
+  color: #333;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.languageBtn:hover {
+  background-color: #e8e8e8;
+  transform: translateY(-1px);
+}
+
+.languageBtn.active {
+  background-color: #1a3f6b;
+  color: #fff;
+  border-color: #1a3f6b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.languageBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .topBar {
+    padding: 15px 20px;
+  }
+
+  .topBarContainer {
+    gap: 10px;
+    padding: 0px;
+  }
+
+  .socialIcons {
+    gap: 10px;
+  }
+
+  .socialIcon {
+    font-size: 16px;
+  }
+
+  .languageBtn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .languageSwitcher {
+    gap: 5px;
+  }
+
+  .languageBtn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .socialIcons {
+    gap: 8px;
+  }
+
+  .socialIcon {
+    font-size: 16px;
+  }
+}

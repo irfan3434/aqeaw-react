@@ -1,0 +1,270 @@
+/* ===== Section ===== */
+.newsSection {
+  text-align: center;
+  padding: 60px 20px 50px;
+  background-color: #f9f9f9;
+  position: relative;
+  overflow: hidden;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:global(html[lang='ar']) .newsSection {
+  direction: rtl;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== Title ===== */
+.newsSectionTitle {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  margin-bottom: 40px;
+  color: #1a3f6b;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ===== Card Container ===== */
+.newsCardContainer {
+  position: relative;
+  height: 230px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+/* ===== Event Card (base — hidden state) ===== */
+.newsEventCard {
+  position: absolute;
+  width: 70%;
+  max-width: 560px;
+  background: #c4a21e;
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  /* hidden by default */
+  opacity: 0;
+  filter: blur(6px);
+  transform: scale(0.75) translateX(0);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Active card */
+.newsEventCardActive {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1) translateX(0) translateY(0);
+  z-index: 10;
+  pointer-events: auto;
+  box-shadow: 0 16px 48px rgba(196, 162, 30, 0.35);
+}
+
+/* Previous card (left) */
+.newsEventCardPrev {
+  opacity: 0.55;
+  filter: blur(2px);
+  transform: scale(0.88) translateX(-38%) translateY(12px);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Next card (right) */
+.newsEventCardNext {
+  opacity: 0.55;
+  filter: blur(2px);
+  transform: scale(0.88) translateX(38%) translateY(12px);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Hidden cards (all others) */
+.newsEventCardHidden {
+  opacity: 0;
+  filter: blur(8px);
+  transform: scale(0.7);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Step badge ===== */
+.newsEventBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #1a3f6b;
+  color: #ffcb00;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(26, 63, 107, 0.4);
+}
+
+/* ===== Event Title ===== */
+.newsEventTitle {
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-family: inherit;
+  color: #1a3f6b;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ===== Divider ===== */
+.newsEventDivider {
+  width: 50px;
+  height: 2px;
+  background: rgba(26, 63, 107, 0.25);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ===== Date ===== */
+.newsEventDate {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1a3f6b;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.85;
+}
+
+:global(html[lang='ar']) .newsEventDate {
+  flex-direction: row-reverse;
+}
+
+/* ===== Dot indicators ===== */
+.newsDots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.newsDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #d4c07a;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.newsDotActive {
+  background: #1a3f6b;
+  transform: scale(1.35);
+}
+
+.newsDot:hover {
+  background: #c4a21e;
+  transform: scale(1.2);
+}
+
+.newsDot:focus-visible {
+  outline: 2px solid #1a3f6b;
+  outline-offset: 3px;
+}
+
+/* ===== Prev / Next arrows ===== */
+.newsArrows {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.newsArrowBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #c4a21e;
+  background: #fff;
+  color: #1a3f6b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsArrowBtn:hover {
+  background: #c4a21e;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.newsArrowBtn:focus-visible {
+  outline: 2px solid #1a3f6b;
+  outline-offset: 3px;
+}
+
+/* ===== RTL arrow flip ===== */
+:global(html[lang='ar']) .newsArrows {
+  flex-direction: row-reverse;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .newsSection {
+    padding: 40px 12px 36px;
+  }
+
+  .newsSectionTitle {
+    font-size: 1.3rem;
+    margin-bottom: 28px;
+  }
+
+  .newsCardContainer {
+    height: 200px;
+  }
+
+  .newsEventCard {
+    width: 82%;
+    padding: 22px 20px;
+    gap: 8px;
+  }
+
+  .newsEventCardPrev {
+    transform: scale(0.85) translateX(-32%) translateY(10px);
+  }
+
+  .newsEventCardNext {
+    transform: scale(0.85) translateX(32%) translateY(10px);
+  }
+
+  .newsEventTitle {
+    font-size: 1rem;
+  }
+
+  .newsEventDate {
+    font-size: 0.9rem;
+  }
+
+  .newsEventBadge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.72rem;
+  }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  .newsEventCard {
+    transition: opacity 0.3s ease !important;
+  }
+}

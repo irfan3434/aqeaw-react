@@ -1,0 +1,499 @@
+/* ===== Wrapper ===== */
+.ctWrapper {
+  background: #0d1b2a;
+  min-height: 100vh;
+  color: #e8eef9;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:global(html[lang='ar']) .ctWrapper {
+  direction: rtl;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===== Hero ===== */
+.ctHero {
+  position: relative;
+  padding: 90px 20px 70px;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffcb00 0%, #1a3f6b 50%, #0d1b2a 100%);
+}
+
+.ctHeroBg {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    rgba(255,255,255,0.035) 0% 2%,
+    transparent 2% 4%
+  );
+  z-index: 0;
+}
+
+.ctHeroOrb1 {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,162,30,0.22) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.ctHeroOrb2 {
+  position: absolute;
+  bottom: -60px;
+  left: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(58,124,180,0.25) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.ctHeroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctHeroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(196,162,30,0.18);
+  border: 1px solid rgba(196,162,30,0.4);
+  color: #ffcb00;
+  padding: 7px 18px;
+  border-radius: 30px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  animation: ctFadeDown 0.7s ease-out both;
+}
+
+.ctHeroTitle {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 16px;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.4);
+  animation: ctFadeDown 0.7s ease-out 0.1s both;
+}
+
+.ctHeroSub {
+  font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+  color: rgba(255,255,255,0.82);
+  line-height: 1.7;
+  margin: 0 0 24px;
+  animation: ctFadeDown 0.7s ease-out 0.2s both;
+}
+
+.ctHeroDivider {
+  width: 70px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffcb00, #c4a21e, transparent);
+  margin: 0 auto;
+  border-radius: 2px;
+  animation: ctFadeDown 0.7s ease-out 0.3s both;
+}
+
+/* ===== Info Cards Row ===== */
+.ctInfoRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1100px;
+  margin: -48px auto 0;
+  padding: 0 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.ctInfoCard {
+  position: relative;
+  background: #16263a;
+  border: 1px solid rgba(196,162,30,0.14);
+  border-radius: 20px;
+  padding: 36px 28px 30px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.35s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.3s ease;
+  animation: ctItemIn 0.6s ease-out both;
+}
+
+.ctInfoCard:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  border-color: rgba(196,162,30,0.35);
+}
+
+.ctInfoCardGlow {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(196,162,30,0.14) 0%, transparent 70%);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.ctInfoCard:hover .ctInfoCardGlow { opacity: 2; }
+
+.ctInfoIconRing {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(196,162,30,0.18), rgba(26,63,107,0.3));
+  border: 2px solid rgba(196,162,30,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.ctInfoCard:hover .ctInfoIconRing {
+  border-color: #c4a21e;
+  transform: scale(1.08);
+}
+
+.ctInfoIcon {
+  width: 30px;
+  height: 30px;
+  color: #c4a21e;
+}
+
+.ctInfoIcon svg { width: 100%; height: 100%; }
+
+.ctInfoLabel {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e8eef9;
+  margin: 0 0 10px;
+  letter-spacing: 0.01em;
+}
+
+.ctInfoLine {
+  font-size: 0.88rem;
+  color: #8899bb;
+  line-height: 1.65;
+  margin: 0 0 4px;
+  display: block;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a.ctInfoLine:hover { color: #ffcb00; }
+
+/* ===== Form Section ===== */
+.ctFormSection {
+  max-width: 1100px;
+  margin: 60px auto 80px;
+  padding: 10px 24px;
+}
+
+.ctFormCard {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border: 1px solid rgba(196,162,30,0.12);
+  animation: ctFadeUp 0.6s ease-out 0.3s both;
+}
+
+/* Left decorative panel */
+.ctFormLeft {
+  position: relative;
+  background: linear-gradient(160deg, #1a3f6b 0%, #122f51 100%);
+  padding: 52px 40px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ctFormLeftOrb {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,162,30,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ctFormLeftTitle {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 14px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.ctFormLeftSub {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.7;
+  margin: 0 0 28px;
+  position: relative;
+}
+
+.ctFormLeftDivider {
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, #ffcb00, transparent);
+  margin-bottom: 28px;
+  border-radius: 2px;
+}
+
+:global(html[lang='ar']) .ctFormLeftDivider {
+  background: linear-gradient(270deg, #ffcb00, transparent);
+}
+
+.ctFormLeftLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+.ctFormLeftLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.ctFormLeftLink svg { color: #c4a21e; flex-shrink: 0; }
+
+.ctFormLeftLink:hover { color: #ffcb00; }
+
+/* Right form panel */
+.ctFormRight {
+  background: #16263a;
+  padding: 52px 48px;
+}
+
+/* Fields */
+.ctField {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.ctLabel {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8899bb;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+
+.ctFieldFocused .ctLabel { color: #c4a21e; }
+
+.ctInputWrap {
+  position: relative;
+}
+
+.ctInputIcon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 16px;
+  color: #5577aa;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+:global(html[lang='ar']) .ctInputIcon {
+  left: auto;
+  right: 16px;
+}
+
+.ctTextareaIcon {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: #5577aa;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+:global(html[lang='ar']) .ctTextareaIcon {
+  left: auto;
+  right: 16px;
+}
+
+.ctFieldFocused .ctInputIcon,
+.ctFieldFocused .ctTextareaIcon { color: #c4a21e; }
+
+.ctInput,
+.ctTextarea {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  color: #e8eef9;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  box-sizing: border-box;
+  outline: none;
+}
+
+:global(html[lang='ar']) .ctInput,
+:global(html[lang='ar']) .ctTextarea {
+  padding: 14px 44px 14px 16px;
+}
+
+.ctTextarea {
+  resize: vertical;
+  min-height: 130px;
+  padding-top: 14px;
+  line-height: 1.6;
+}
+
+.ctInput::placeholder,
+.ctTextarea::placeholder { color: #445566; }
+
+.ctInput:focus,
+.ctTextarea:focus {
+  border-color: #c4a21e;
+  background: rgba(196,162,30,0.05);
+  box-shadow: 0 0 0 3px rgba(196,162,30,0.1);
+}
+
+/* Status messages */
+.ctSuccess,
+.ctError {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: ctFadeIn 0.3s ease-out;
+}
+
+.ctSuccess {
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #4ade80;
+}
+
+.ctError {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+}
+
+/* Submit button */
+.ctSubmit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #c4a21e 0%, #ffcb00 50%, #c4a21e 100%);
+  background-size: 200% auto;
+  color: #0d1b2a;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background-position 0.4s ease,
+              transform 0.3s ease,
+              box-shadow 0.3s ease;
+  box-shadow: 0 6px 24px rgba(196,162,30,0.35);
+}
+
+.ctSubmit:hover {
+  background-position: right center;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(196,162,30,0.5);
+}
+
+.ctSubmit:active { transform: translateY(-1px); }
+
+/* ===== Animations ===== */
+@keyframes ctFadeDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ctFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ctItemIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ctFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .ctInfoRow {
+    grid-template-columns: 1fr;
+    margin-top: 40px;
+  }
+
+  .ctFormCard {
+    grid-template-columns: 1fr;
+  }
+
+  .ctFormLeft { padding: 40px 32px; }
+  .ctFormRight { padding: 40px 32px; }
+}
+
+@media (max-width: 600px) {
+  .ctHero { padding: 60px 16px 50px; }
+  .ctHeroTitle { font-size: 1.8rem; }
+
+  .ctInfoRow { padding: 0 16px; gap: 16px; }
+  .ctInfoCard { padding: 28px 20px 24px; }
+
+  .ctFormSection { padding: 0 16px; }
+  .ctFormLeft  { padding: 32px 24px; }
+  .ctFormRight { padding: 32px 24px; }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  .ctHeroBadge, .ctHeroTitle, .ctHeroSub, .ctHeroDivider,
+  .ctInfoCard, .ctFormCard { animation: none; }
+}

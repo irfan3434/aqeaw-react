@@ -1,0 +1,295 @@
+/* ===== Wrapper ===== */
+.ecWrapper {
+  background-color: #ecf0f1;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #2c3e50;
+  line-height: 1.8;
+  min-height: 100vh;
+  margin-top: 170px;
+}
+
+:global(html[lang='ar']) .ecWrapper {
+  direction: rtl;
+  font-family: GraphikWide-Thin, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== Hero Banner ===== */
+.ecHeroBanner {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: linear-gradient(135deg, #1a2c3d 0%, #233d53 50%, #1a2c3d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ecHeroPattern {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(
+    rgba(196, 162, 30, 0.07) 0% 2%,
+    transparent 2% 4%
+  );
+  z-index: 1;
+}
+
+.ecHeroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.ecHeroTitle {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  animation: ecFadeDown 0.9s ease-out forwards;
+}
+
+.ecHeroDivider {
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #c4a21e, #ffcb00, #c4a21e, transparent);
+  margin: 0 auto;
+  border-radius: 2px;
+  animation: ecFadeDown 0.9s ease-out 0.2s both;
+}
+
+/* ===== Container Grid ===== */
+.ecContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (min-width: 1024px) {
+  .ecContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+}
+
+/* ===== Section Card — dark theme matching original ===== */
+.ecSection {
+  position: relative;
+  background: #233d53;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(196, 162, 30, 0.15);
+  overflow: hidden;
+  height: 480px;
+
+  /* Start hidden */
+  opacity: 0;
+  transform: scale(0.93) translateY(22px);
+  transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.ecSection:hover {
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
+  border-color: rgba(196, 162, 30, 0.4);
+}
+
+.ecSectionVisible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Decorative corner triangle */
+.ecSectionCorner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 52px 52px 0;
+  border-color: transparent rgba(196, 162, 30, 0.18) transparent transparent;
+  z-index: 0;
+}
+
+:global(html[lang='ar']) .ecSectionCorner {
+  right: auto;
+  left: 0;
+  border-width: 0 0 52px 52px;
+  border-color: transparent transparent transparent rgba(196, 162, 30, 0.18);
+}
+
+/* ===== Section Header ===== */
+.ecSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+:global(html[lang='ar']) .ecSectionHeader {
+  flex-direction: row;
+}
+
+.ecSectionIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c4a21e, #ffcb00);
+  color: #1a2c3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(196, 162, 30, 0.4);
+}
+
+.ecSectionHeading {
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  color: #c4a21e;
+  font-family: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* ===== Subheading ===== */
+.ecSectionSubheading {
+  font-size: 0.95rem;
+  color: #a8c4d8;
+  margin: 0 0 16px;
+  line-height: 1.7;
+  font-style: italic;
+  position: relative;
+  z-index: 1;
+  border-left: 3px solid rgba(196, 162, 30, 0.5);
+  padding-left: 12px;
+}
+
+:global(html[lang='ar']) .ecSectionSubheading {
+  font-style: normal;
+  font-size: 1rem;
+  border-left: none;
+  border-right: 3px solid rgba(196, 162, 30, 0.5);
+  padding-left: 0;
+  padding-right: 12px;
+}
+
+/* ===== List ===== */
+.ecList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.ecListItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  line-height: 1.0;
+}
+
+:global(html[lang='ar']) .ecListItem {
+  flex-direction: row;
+}
+
+.ecListCheck {
+  color: #c4a21e;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 3px;
+  filter: drop-shadow(0 0 4px rgba(196, 162, 30, 0.5));
+}
+
+.ecListText {
+  font-size: 1rem;
+  color: #e0eaf2;
+  text-align: justify;
+  line-height: 1.7;
+}
+
+:global(html[lang='ar']) .ecListText {
+  font-size: 1.05rem;
+  text-align: right;
+}
+
+/* ===== Animations ===== */
+@keyframes ecFadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .ecHeroBanner {
+    height: 160px;
+  }
+
+  .ecHeroTitle {
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  .ecContainer {
+    padding: 28px 16px 40px;
+    gap: 20px;
+  }
+
+  .ecSection {
+    padding: 20px 18px;
+    border-radius: 12px;
+    height: auto;
+  }
+
+  .ecSectionHeading {
+    font-size: 0.95rem;
+  }
+
+  .ecListText {
+    font-size: 0.9rem;
+  }
+
+  :global(html[lang='ar']) .ecListText {
+    font-size: 0.95rem;
+  }
+
+  .ecSectionIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .ecSectionSubheading {
+    font-size: 0.88rem;
+  }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  .ecSection {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .ecHeroTitle,
+  .ecHeroDivider {
+    animation: none;
+  }
+}
