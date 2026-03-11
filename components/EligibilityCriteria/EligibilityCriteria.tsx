@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import { useEffect, useRef } from 'react'
 import { useLanguage } from '../../lib/LanguageContext'
 import styles from './EligibilityCriteria.module.css'
@@ -150,7 +152,7 @@ const content = {
 }
 
 // Icon per section
-const sectionIcons: Record<string, JSX.Element> = {
+const sectionIcons: Record<string, React.ReactElement> = {
   'ec-requirements': (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

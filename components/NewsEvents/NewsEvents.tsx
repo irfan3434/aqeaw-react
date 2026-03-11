@@ -8,23 +8,23 @@ const newsData = {
   en: {
     title: '2025 Events Timeline',
     events: [
-      { id: 'n-1',  heading: 'Award and the platform inaugurated',          date: '01/09/2025' },
-      { id: 'n-2',  heading: 'Announced the start of accepting nominations', date: '01/10/2025' },
-      { id: 'n-3',  heading: 'Applications closed',                          date: '05/10/2025' },
-      { id: 'n-4',  heading: 'Evaluation and arbitration completed',         date: '05/10/2025' },
-      { id: 'n-5',  heading: 'Winners Announced',                            date: '07/10/2025' },
-      { id: 'n-6',  heading: 'Ceremony Concluded',                           date: '08/06/2025' },
+      { id: 'n-1', heading: 'Award and the platform inaugurated',           date: '01/09/2025' },
+      { id: 'n-2', heading: 'Announced the start of accepting nominations',  date: '01/10/2025' },
+      { id: 'n-3', heading: 'Applications closed',                           date: '05/10/2025' },
+      { id: 'n-4', heading: 'Evaluation and arbitration completed',          date: '05/10/2025' },
+      { id: 'n-5', heading: 'Winners Announced',                             date: '07/10/2025' },
+      { id: 'n-6', heading: 'Ceremony Concluded',                            date: '08/06/2025' },
     ],
   },
   ar: {
     title: 'جدول زمني لأحداث عام 2025',
     events: [
-      { id: 'n-1',  heading: 'تدشين الجائزة والمنصة',              date: '2025/01/09' },
-      { id: 'n-2',  heading: 'أعلن عن بدء قبول الترشيحات',         date: '2025/01/10' },
-      { id: 'n-3',  heading: 'تم إغلاق باب التقدم للطلبات',        date: '2025/05/10' },
-      { id: 'n-4',  heading: 'اكتمل التقييم والتحكيم',             date: '2025/05/10' },
-      { id: 'n-5',  heading: 'الإعلان عن الفائزين',                date: '2025/07/10' },
-      { id: 'n-6',  heading: 'اختتام الحفل',                       date: '2025/08/06' },
+      { id: 'n-1', heading: 'تدشين الجائزة والمنصة',           date: '2025/01/09' },
+      { id: 'n-2', heading: 'أعلن عن بدء قبول الترشيحات',      date: '2025/01/10' },
+      { id: 'n-3', heading: 'تم إغلاق باب التقدم للطلبات',     date: '2025/05/10' },
+      { id: 'n-4', heading: 'اكتمل التقييم والتحكيم',          date: '2025/05/10' },
+      { id: 'n-5', heading: 'الإعلان عن الفائزين',             date: '2025/07/10' },
+      { id: 'n-6', heading: 'اختتام الحفل',                    date: '2025/08/06' },
     ],
   },
 }
@@ -33,11 +33,28 @@ type CardState = 'active' | 'prev' | 'next' | 'hidden'
 
 export default function NewsEvents() {
   const { lang } = useLanguage()
-  const data = newsData[lang]
-  const total = data.events.length
+
+  // ── FIX: reset index during render, not inside an effect ──────────────
+  // Track the previous language with a ref. If it differs from the current
+  // lang at render time, we know a language switch just happened.
+  // Reset activeIndex to 0 right here during the render pass — this is the
+  // React-recommended pattern for "derived state from props/context changes"
+  // and avoids the cascading-render warning caused by setState-in-effect.
+  const prevLangRef = useRef(lang)
   const [activeIndex, setActiveIndex] = useState(0)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  if (prevLangRef.current !== lang) {
+    prevLangRef.current = lang
+    // Mutate state synchronously during render (React flushes this in the
+    // same render pass — no extra re-render cycle, no cascade warning)
+    setActiveIndex(0)
+  }
+  // ──────────────────────────────────────────────────────────────────────
+
+  const data    = newsData[lang]
+  const total   = data.events.length
   const [paused, setPaused] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const getCardState = (index: number): CardState => {
     if (index === activeIndex) return 'active'
@@ -47,7 +64,7 @@ export default function NewsEvents() {
   }
 
   const advance = () => setActiveIndex(prev => (prev + 1) % total)
-  const goTo = (index: number) => setActiveIndex(index)
+  const goTo    = (index: number) => setActiveIndex(index)
 
   // Auto-advance
   useEffect(() => {
@@ -56,9 +73,6 @@ export default function NewsEvents() {
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [paused, total])
-
-  // Reset index when language changes
-  useEffect(() => { setActiveIndex(0) }, [lang])
 
   return (
     <section
@@ -96,15 +110,14 @@ export default function NewsEvents() {
 
               <h3 className={styles.newsEventTitle}>{event.heading}</h3>
 
-              {/* Divider */}
               <div className={styles.newsEventDivider} aria-hidden="true" />
 
               <p className={styles.newsEventDate}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                   <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
+                  <line x1="8"  y1="2" x2="8"  y2="6"/>
+                  <line x1="3"  y1="10" x2="21" y2="10"/>
                 </svg>
                 {event.date}
               </p>
