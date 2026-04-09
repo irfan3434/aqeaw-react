@@ -59,12 +59,7 @@ const content = {
         heading: 'Dates of the Award in the First Cycle',
         type: 'list' as const,
         items: [
-          'Award inauguration: January 09, 2025',
-          'Open Call for Submissions: January 10, 2025',
-          'Application closes: May 10, 2025',
-          'Evaluation and Judging: May 10, 2025',
-          'Announcement of winners: July 10, 2025',
-          'Announcement of the ceremony date and venue: July 10, 2025',
+          'Acceptance of nominations for the second round begins on  12-04-2026 AD corresponding to 24-10-1447 AH Stay tuned for other dates details',
         ],
       },
     ],
@@ -121,12 +116,7 @@ const content = {
         heading: 'مواعيد الجائزة في الدورة الأولى',
         type: 'list' as const,
         items: [
-          'التدشين للجائزة: 09 يناير 2025م',
-          'فتح باب التقديم: 10 يناير 2025م',
-          'إغلاق باب التقديم: 10 مايو 2025م',
-          'التقييم والتحكيم: 10 مايو 2025م',
-          'إعلان الفائزين: 10 يوليو 2025م',
-          'إعلان موعد ومكان الحفل والتكريم: 10 يوليو 2025م',
+          'يبدأ قبول الترشيحات للدورة الثانية بتاريخ 12-04-2026 م الموافق 24—10- 1447هـ وترقبوا تفاصيل المواعيد الأخرى.'
         ],
       },
     ],

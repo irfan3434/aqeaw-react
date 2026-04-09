@@ -6,25 +6,25 @@ import styles from './NewsEvents.module.css'
 
 const newsData = {
   en: {
-    title: '2025 Events Timeline',
+    title: '2026 Events Timeline',
     events: [
       { id: 'n-1', heading: 'Award and the platform inaugurated',           date: '01/09/2025' },
-      { id: 'n-2', heading: 'Announced the start of accepting nominations',  date: '01/10/2025' },
-      { id: 'n-3', heading: 'Applications closed',                           date: '05/10/2025' },
-      { id: 'n-4', heading: 'Evaluation and arbitration completed',          date: '05/10/2025' },
-      { id: 'n-5', heading: 'Winners Announced',                             date: '07/10/2025' },
-      { id: 'n-6', heading: 'Ceremony Concluded',                            date: '08/06/2025' },
+      { id: 'n-2', heading: 'Announced the start of accepting nominations',  date: '12/04/2026' },
+      { id: 'n-3', heading: 'Applications closed',                           date: 'Stay tuned for the date!' },
+      { id: 'n-4', heading: 'Evaluation and arbitration completed',          date: 'Stay tuned for the date!' },
+      { id: 'n-5', heading: 'Winners Announced',                             date: 'Stay tuned for the date!' },
+      { id: 'n-6', heading: 'Ceremony Concluded',                            date: 'Stay tuned for the date!' },
     ],
   },
   ar: {
     title: 'جدول زمني لأحداث عام 2025',
     events: [
       { id: 'n-1', heading: 'تدشين الجائزة والمنصة',           date: '2025/01/09' },
-      { id: 'n-2', heading: 'أعلن عن بدء قبول الترشيحات',      date: '2025/01/10' },
-      { id: 'n-3', heading: 'تم إغلاق باب التقدم للطلبات',     date: '2025/05/10' },
-      { id: 'n-4', heading: 'اكتمل التقييم والتحكيم',          date: '2025/05/10' },
-      { id: 'n-5', heading: 'الإعلان عن الفائزين',             date: '2025/07/10' },
-      { id: 'n-6', heading: 'اختتام الحفل',                    date: '2025/08/06' },
+      { id: 'n-2', heading: 'أعلن عن بدء قبول الترشيحات',      date: '12/04/2026' },
+      { id: 'n-3', heading: 'تم إغلاق باب التقدم للطلبات',     date: 'ترقبوا التاريخ' },
+      { id: 'n-4', heading: 'اكتمل التقييم والتحكيم',          date: 'ترقبوا التاريخ' },
+      { id: 'n-5', heading: 'الإعلان عن الفائزين',             date: 'ترقبوا التاريخ' },
+      { id: 'n-6', heading: 'اختتام الحفل',                    date: 'ترقبوا التاريخ' },
     ],
   },
 }
