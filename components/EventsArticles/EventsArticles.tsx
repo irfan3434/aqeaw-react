@@ -26,7 +26,7 @@ export default function EventsArticles() {
   const [videoUrl,        setVideoUrl]        = useState<string | null>(null)
 
   const gridRef = useRef<HTMLDivElement>(null)
-
+ 
   // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -76,6 +76,65 @@ export default function EventsArticles() {
               : 'Explore our collection of memorable moments, insightful articles, and inspiring videos from the ceremony'}
           </p>
           <div className={styles.evHeroDivider} aria-hidden="true" />
+        </div>
+      </div>
+
+      {/* ── Ceremony Summary ─────────────────────────────── */}
+      <div className={styles.evSummary}>
+        <div className={styles.evSummaryInner}>
+          <h2 className={styles.evSummaryTitle}>
+            {isAr
+              ? 'ملخص حفل وأحداث ومعلومات الدورة الأولى لجائزة الدكتورعايض القرني للتميز'
+              : 'Summary of the Ceremony, Events, and Information for the First Edition of the Dr. Ayed Al-Qarni Award for Excellence'}
+          </h2>
+          <div className={styles.evSummaryDivider} aria-hidden="true" />
+          <ul className={styles.evSummaryList}>
+            {(isAr ? [
+              'تحت رعاية صاحب السمو الملكي أمير منطقة عسير اقيم حفل الدورة الاولى لجائزة الدكتور عائض القرني للتميز يوم الأربعاء 12-2-1447هـ الموافق 6-8-2025م',
+              'شرّف الحفل نيابة عن سمو أمير المنطقة سعادة محافظ محافظة بلقرن الأستاذ/محمد بن سعيد بن عامر.',
+              'أقيم حفل جائزة الدكتور عائض القرني للتميز في سبت العلاية بمقر قاعة الكلية التقنية للبنات ببلقرن',
+              'بدأ الحفل في تمام الساعة التاسعة مساءً وسط حضور كثيف رفيع المستوى من اصحاب المعالي والفضيلة والسعادة ووجهاء المجتمع السعودي.',
+              'تناوب على تقديم الحفل كلٌ من الدكتور الاعلامي علي بن محمد آل حافظ والاعلامي محمد بن صالح ابو يزن.',
+              'شملت فقرات الحفل:',
+              'آيات من الذكر الحكيم تلاها الشيخ عبد الرحمن بن محمد بن شبيلي.',
+              'كلمة الدكتور عائض القرني صاحب الجائزة والمشرف العام.',
+              'فلم وثائقي عن الجائزة.',
+              'كلمة معالي الدكتور علي بن عبدالخالق الطاحسي عن لوائح الجائزة.',
+              'كلمة أ.د/ عبدالله بن محمد آل دميس عن تقنيات ومنصة الجائزة.',
+              'قصيدة للشاعر سعيد بن ناصر.',
+              'كلمة الدكتور منير القرني للتحدث عن أثر الجائزة.',
+              'قصيدة الشاعر سعد بن شبرين.',
+              'كلمة الدكتور سعيد بن محمد الكعيتي.',
+              'إعلان أمين الجائزة للفائزين وتكريمهم بيد صاحب الجائزة ومحافظ محافظة بلقرن.',
+              'دحيم بن محمد ال حويس، و علي بن محمد ال دواري، و بدر بن محمد آل رئيسه، و براء بنت عبد الكريم القرني، وأريج بن عبدالله القرني.',
+              'فقرة خاصة لشكر وتكريم أصحاب المبادرات يتقدمهم الشيخ عثمان الشهري، وكلية التقنية للبنات، وشركة البرهان للمحاماة، وشركة الاوضح العقارية.',
+              'اختتم الحفل بالاوبريت من كلمات الشاعر ناصر بن حسن وادائه مع المنشد فهد القرني وبحضور فرقة بلقرن.',
+              'إعلان تبرع رجل الاعمال الشيخ مسفر بن عوضة للجائزة في دورتها القادمة بمبلغ 300 الف ريال.',
+            ] : [
+              'Under the patronage of His Royal Highness the Prince of Asir Region, the first ceremony of the Dr. Ayed Al-Qarni Award for Excellence was held on Wednesday, 12-2-1447 AH, corresponding to 6-8-2025 AD.',
+              'The ceremony was honored by His Excellency the Governor of Balqarn Province, Mr. Mohammed bin Saeed bin Amer, on behalf of His Highness the Emir of the region.',
+              'The Dr. Ayed Al-Qarni Award for Excellence ceremony was held in Sabt Al-Alaia at the Technical College for Girls in Balqarn.',
+              'The ceremony began at 9 p.m. and was attended by a large number of high-ranking dignitaries, including Their Excellencies, Their Eminences, Their Honors, and prominent figures of Saudi society.',
+              'The ceremony was hosted by media personality Dr. Ali bin Mohammed Al Hafiz and media personality Mohammed bin Saleh Abu Yazan.',
+              'The ceremony included the following segments:',
+              'Verses from the Wise Remembrance recited by Sheikh Abdul Rahman bin Muhammad bin Shibli.',
+              'Speech by Dr. Ayed Al-Qarni, award winner and general supervisor.',
+              'A documentary film about the award.',
+              'Speech by His Excellency Dr. Ali bin Abdulkhaliq Al-Tahsi on the award regulations.',
+              'A speech by Prof. Abdullah bin Mohammed Al-Damais on the award\'s technologies and platform.',
+              'A poem by the poet Saeed bin Nasser.',
+              'A speech by Dr. Munir Al-Qarni on the impact of the award.',
+              'A poem by the poet Saad bin Shabrin.',
+              'Speech by Dr. Saeed bin Mohammed Al-Kaity.',
+              'The award secretary announces the winners and honors them with the award owner and the governor of Balqarn Province.',
+              'Dahim bin Muhammad al-Huwais, Ali bin Muhammad al-Dawari, Badr bin Muhammad al-Ra\'is, Bara\'a bint Abdul Karim al-Qarni, and Arij bin Abdullah al-Qarni.',
+              'A special section to thank and honor the initiators, led by Sheikh Othman Al-Shahri, the Technical College for Girls, Al-Burhan Law Firm, and Al-Awadh Real Estate Company.',
+              'The ceremony concluded with an operetta written by poet Nasser bin Hassan and performed by singer Fahad Al-Qarni, accompanied by the Balqarn band.',
+              'Announcement of a donation by businessman Sheikh Musfir bin Awadah to the award in its upcoming edition in the amount of 300,000 riyals.',
+            ]).map((item, i) => (
+              <li key={i} className={styles.evSummaryItem}>{item}</li>
+            ))}
+          </ul>
         </div>
       </div>
 

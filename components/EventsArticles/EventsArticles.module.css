@@ -72,6 +72,83 @@
   animation: evFadeDown 0.8s ease-out 0.3s both;
 }
 
+/* ===== Ceremony Summary ===== */
+.evSummary {
+  background: linear-gradient(135deg, #0f2236 0%, #16263a 100%);
+  border-top: 1px solid rgba(196, 162, 30, 0.2);
+  border-bottom: 1px solid rgba(196, 162, 30, 0.2);
+  padding: 56px 20px;
+}
+
+.evSummaryInner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.evSummaryTitle {
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  font-weight: 700;
+  color: #ffcb00;
+  text-align: center;
+  margin: 0 0 18px;
+  line-height: 1.4;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+}
+
+.evSummaryDivider {
+  width: 70px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #c4a21e, transparent);
+  margin: 0 auto 36px;
+  border-radius: 2px;
+}
+
+.evSummaryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.evSummaryItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  color: #c8d8ee;
+  line-height: 1.7;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(196, 162, 30, 0.1);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.evSummaryItem::before {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c4a21e;
+  margin-top: 8px;
+}
+
+.evSummaryItem:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(196, 162, 30, 0.25);
+}
+
+:global(html[lang='ar']) .evSummaryList { direction: rtl; }
+
+@media (max-width: 768px) {
+  .evSummary { padding: 36px 16px; }
+  .evSummaryTitle { font-size: 1.1rem; }
+  .evSummaryItem { padding: 12px 14px; font-size: 0.88rem; }
+}
+
 /* ===== Navigation ===== */
 .evNav {
   display: flex;
