@@ -30,7 +30,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'Who is eligible to apply for the Award?',
         answerType: 'paragraph',
         items: [
-          'Eligibility is limited to members of the Balqarn tribes. Applicants must not have received the award in the past three cycles, and their achievements must comply with the terms of the award and the ethical, cultural and legal standards.',
+          'The award is limited to all the sons and daughters of Balqrin Governorate, in addition to all the Bilqrin in Tihama and Al-Sarra. The applicant must not have received the award in the last three cycles, and his/her achievements must comply with the terms of the award and with ethical, cultural and legal standards.',
         ],
       },
       {
@@ -71,7 +71,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'When does the application process open?',
         answerType: 'paragraph',
         items: [
-          'Applications begin on January 10 of each year, with the schedule and deadlines announced in advance on this and other platforms.',
+          'The schedule and deadlines are announced in advance via this platform and across the various platforms. You have to follow up always.',
         ],
       },
       {
@@ -79,12 +79,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'What are the key deadlines for the current cycle?',
         answerType: 'lines',
         items: [
-          'Award inauguration: January 09, 2025',
-          'Open Call for Submissions: January 10, 2025',
-          'Application closes: May 10, 2025',
-          'Evaluation and Judging: May 10, 2025',
-          'Announcement of winners: July 10, 2025',
-          'Announcement of the ceremony date and venue: July 10, 2025',
+          'Acceptance of nominations for the second round begins on 12-04-2026 AD corresponding to 24-10-1447 AH Stay tuned for other dates details',
         ],
       },
     ],
@@ -105,7 +100,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'من المؤهل للتقديم على الجائزة؟',
         answerType: 'paragraph',
         items: [
-          'تقتصر الأهلية على أعضاء قبائل بلقرن. يجب ألا يكون المتقدم قد حصل على الجائزة في الدورات الثلاث الماضية، وأن تتوافق إنجازاته مع شروط الجائزة ومع المعايير الأخلاقية والثقافية والقانونية.',
+         'تقتصر الجائزة على كل أبناء وبنات محافظة بلقرن إضافة لكل بلقرن في تهامة والسراة. يجب ألا يكون المتقدم قد حصل على الجائزة في الدورات الثلاث الماضية، وأن تتوافق إنجازاته مع شروط الجائزة ومع المعايير الأخلاقية والثقافية والقانونية.',
         ],
       },
       {
@@ -146,7 +141,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'متى يبدأ التقديم للجائزة؟',
         answerType: 'paragraph',
         items: [
-          'يبدأ التقديم في يوم 10 من شهر يناير كل عام، وهذا يتم مع إعلان الجدول الزمني والمواعيد النهائية مسبقاً عبر هذه المنصة وعبر المنصات المختلفة.',
+          'يتم مع إعلان الجدول الزمني والمواعيد النهائية مسبقاً عبر هذه المنصة وعبر المنصات المختلفة. عليكم بالمتابعة الدائمة.',
         ],
       },
       {
@@ -154,12 +149,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'ما هي المواعيد النهائية للدورة الحالية؟',
         answerType: 'lines',
         items: [
-          'التدشين للجائزة: 09 يناير 2025م',
-          'فتح باب التقديم: 10 يناير 2025م',
-          'إغلاق باب التقديم: 10 مايو 2025م',
-          'التقييم والتحكيم: 10 مايو 2025م',
-          'إعلان الفائزين: 10 يوليو 2025م',
-          'إعلان موعد ومكان الحفل والتكريم: 10 يوليو 2025م',
+          'يبدأ قبول الترشيحات للدورة الثانية بتاريخ 12-04-2026 م الموافق 24—10- 1447هـ وترقبوا تفاصيل المواعيد الأخرى',
         ],
       },
     ],
