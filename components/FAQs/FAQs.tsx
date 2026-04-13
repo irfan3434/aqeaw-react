@@ -79,7 +79,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'What are the key deadlines for the current cycle?',
         answerType: 'lines',
         items: [
-          'Acceptance of nominations for the second round begins on 12-04-2026 AD corresponding to 24-10-1447 AH Stay tuned for other dates details',
+          'Acceptance of nominations for the second round begins on 19-04-2026 AD corresponding to 02-11-1447 AH Stay tuned for other dates details',
         ],
       },
     ],
@@ -149,7 +149,7 @@ const content: Record<'en' | 'ar', { title: string; faqs: FAQ[] }> = {
         question: 'ما هي المواعيد النهائية للدورة الحالية؟',
         answerType: 'lines',
         items: [
-          'يبدأ قبول الترشيحات للدورة الثانية بتاريخ 12-04-2026 م الموافق 24—10- 1447هـ وترقبوا تفاصيل المواعيد الأخرى',
+          'يبدأ قبول الترشيحات للدورة الثانية بتاريخ 19-04-2026 م الموافق 02—11-1447هـ وترقبوا تفاصيل المواعيد الأخرى',
         ],
       },
     ],

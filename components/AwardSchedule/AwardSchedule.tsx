@@ -18,7 +18,7 @@ const content = {
           'Announcing the determination of key dates for the prize, which include the following proposed dates:',
         ],
         discItems: [
-          'Announcement of the start of accepting nominations: 12/04/2026',
+          'Announcement of the start of accepting nominations: 19-04-2026 AD corresponding to 02-11-1447 AH',
           'Closing Announcement of Nominations: Stay tuned for the date!',
           'Evaluation and Judging: Stay tuned for the history',
           'Winners Announced: Stay tuned for the date It will be one month before the ceremony',
@@ -125,7 +125,7 @@ const content = {
           'الإعلان عن تحديد المواعيد المهمة للجائزة وتشمل المواعيد المقترحة التالية:',
         ],
         discItems: [
-          'إعلان بدء قبول الترشيحات: 12/04/2026',
+          'إعلان بدء قبول الترشيحات: 9-04-2026 م الموافق 02—11-1447ه',
           'إعلان إغلاق الترشيح: ترقبوا التاريخ',
           'التقييم والتحكيم: ترقبوا التاريخ',
           'الإعلان عن الفائزين: ترقبوا التاريخ سيكون شهراً واحداً قبل الحفل',
