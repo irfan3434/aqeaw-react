@@ -21,7 +21,7 @@ const navItems = {
     { label: 'معايير التأهيل',       href: '/Eligibility-Criteria' },
     { label: 'الأسئلة الشائعة',     href: '/FAQs' },
     { label: 'اتصل بنا',            href: '/Contact-Us' },
-    { label: 'كيفية التقديم',         href: '/HowToApply' },
+    { label: 'فتح الترشيح',         href: '/HowToApply' },
   ],
 }
 
