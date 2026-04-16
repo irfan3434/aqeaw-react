@@ -124,7 +124,7 @@ export default function Footer() {
             {/* Logo */}
             <div className={styles.footerLogoWrapper}>
               <NextImage
-                src="/images/Fcec-Logo.png"
+                src="/images/Logo.png"
                 alt="Logo"
                 width={80}
                 height={80}
