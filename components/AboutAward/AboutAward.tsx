@@ -30,7 +30,7 @@ const content = {
         heading: 'Award Management',
         type: 'list' as const,
         items: [
-          'The Prize Council, chaired by the Prize Holder',
+          'The Prize Council, chaired and administered by the Prize Holder',
           'Executive Scientific Committees',
         ],
       },
