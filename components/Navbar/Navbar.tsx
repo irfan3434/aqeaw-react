@@ -13,6 +13,7 @@ const navItems = {
     { label: 'Eligibility Criteria', href: '/Eligibility-Criteria' },
     { label: 'FAQs',                 href: '/FAQs' },
     { label: 'Contact Us',           href: '/Contact-Us' },
+    { label: 'How to Apply',         href: '/HowToApply' },
   ],
   ar: [
     { label: 'الصفحة الرئيسية',     href: '/' },
@@ -20,6 +21,7 @@ const navItems = {
     { label: 'معايير التأهيل',       href: '/Eligibility-Criteria' },
     { label: 'الأسئلة الشائعة',     href: '/FAQs' },
     { label: 'اتصل بنا',            href: '/Contact-Us' },
+    { label: 'كيفية التقديم',         href: '/HowToApply' },
   ],
 }
 

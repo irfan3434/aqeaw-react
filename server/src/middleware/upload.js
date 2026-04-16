@@ -14,7 +14,7 @@ if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true })
 }
 
-const MAX_FILE_SIZE_MB = Number(process.env.MAX_FILE_SIZE_MB || 4)
+const MAX_FILE_SIZE_MB = Number(process.env.MAX_FILE_SIZE_MB || 4.0)
 
 const ALLOWED_MIMES = new Set([
   'application/pdf',
