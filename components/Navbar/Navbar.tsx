@@ -13,7 +13,7 @@ const navItems = {
     { label: 'Eligibility Criteria', href: '/Eligibility-Criteria' },
     { label: 'FAQs',                 href: '/FAQs' },
     { label: 'Contact Us',           href: '/Contact-Us' },
-    { label: 'How to Apply',         href: '/HowToApply' },
+    { label: 'How to Apply',         href: '/HowToApply', highlight: true},
   ],
   ar: [
     { label: 'الصفحة الرئيسية',     href: '/' },
@@ -21,7 +21,7 @@ const navItems = {
     { label: 'معايير التأهيل',       href: '/Eligibility-Criteria' },
     { label: 'الأسئلة الشائعة',     href: '/FAQs' },
     { label: 'اتصل بنا',            href: '/Contact-Us' },
-    { label: 'فتح الترشيح',         href: '/HowToApply' },
+    { label: 'فتح الترشيح',         href: '/HowToApply', highlight: true},
   ],
 }
 
@@ -122,7 +122,9 @@ export default function Navbar() {
 
             <nav className={styles.navDesktop} aria-label="Main navigation">
               {items.map((item) => (
-                <Link key={item.href} href={item.href}>{item.label}</Link>
+                <Link key={item.href} href={item.href}  className={item.highlight ? styles.applyBtn : ''}>
+                  {item.label}
+                </Link>
               ))}
               <Link href={ceremony.href} className={styles.ceremonyBtn}>
                 {ceremony.label}
@@ -150,7 +152,7 @@ export default function Navbar() {
         aria-label="Mobile navigation">
         <div className={styles.navMobileContent}>
           {items.map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setIsMenuOpen(false)}>
+            <Link key={item.href} href={item.href} className={item.highlight ? styles.applyBtn : ''} onClick={() => setIsMenuOpen(false)}>
               {item.label}
             </Link>
           ))}

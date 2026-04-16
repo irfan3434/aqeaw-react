@@ -245,6 +245,41 @@
   padding: 14px 22px;
 }
 
+
+/* "How to Apply" traffic-signal blink */
+.applyBtn {
+  animation: applyTrafficBlink 1.6s ease-in-out infinite;
+  /* Keep it readable at both color stops */
+  color: #1a3f6b !important;
+  font-weight: 700 !important;
+}
+
+@keyframes applyTrafficBlink {
+  0%, 100% {
+    background: #22c55e;   /* green */
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.55);
+  }
+  50% {
+    background: #fa6915;   /* yellow */
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.7);
+  }
+}
+
+/* Keep the hover behavior on the apply button without killing the animation */
+.applyBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .applyBtn {
+    animation: none;
+    background: #22c55e;
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.55);
+  }
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .navDesktop a {
