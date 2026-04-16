@@ -1,0 +1,765 @@
+/* ============================================================
+   HowToApply.module.css
+   Port of the original howtoapply.css to CSS Modules.
+   - Class names that were global (.apply-form, .nda-modal, etc.) are now module-scoped.
+   - ID-based selectors (#tribeCheckbox, #referrer-info, etc.) became classes.
+   - RTL handling switched from `html[lang="ar"]` to `[dir="rtl"]` ancestor selectors,
+     which works with your LanguageProvider that sets `document.documentElement.dir`.
+   ============================================================ */
+
+.ndaCloseBtn {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* General Styling */
+.applyForm {
+  padding: 20px;
+  max-width: 100%;
+  margin: 165px auto 30px auto;
+  background: #1a3f6b;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: GraphikWide-Thin, sans-serif;
+  color: #fff;
+}
+
+.formSelection {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.formTypeSelect {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 300px;
+  margin: 10px auto;
+  font-family: GraphikWide-Thin, sans-serif;
+}
+
+[dir="rtl"] .applyForm {
+  direction: rtl;
+}
+
+.applyForm h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #c4a21e;
+  margin-bottom: 15px;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.applyForm p {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #f7f7f7;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.checkSection {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+}
+
+.checkSectionRadio {
+  width: 30% !important;
+  padding: 0 !important;
+  height: 20px;
+  margin-bottom: 1em !important;
+  box-shadow: none !important;
+}
+
+.checkSectionParagraph {
+  width: 45% !important;
+  margin: 0.2em !important;
+}
+
+.applyForm fieldset {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  padding: 15px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+
+.applyForm fieldset:global(.visible) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.applyForm legend {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #c4a21e;
+  padding: 0 10px;
+  margin-bottom: 10px;
+}
+
+.applyForm label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.applyForm input,
+.applyForm select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.applyForm textarea {
+  width: 100% !important;
+  max-width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.applyForm button {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: #c4a21e;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-family: GraphikWide-Thin, sans-serif;
+}
+
+.applyForm button:hover {
+  background: #16a085;
+}
+
+.tribalSection {
+  display: flex;
+  width: 100%;
+}
+
+/* Checkbox + Radio */
+.tribeCheckboxLabel {
+  display: inline-block;
+  margin-right: 10px;
+  font-weight: bold;
+  vertical-align: middle;
+  width: 100%;
+  min-width: 250px;
+}
+
+[dir="rtl"] .tribeCheckboxLabel {
+  display: inline-block;
+  margin-right: 10px;
+  font-weight: bold;
+  vertical-align: middle;
+  width: 100%;
+  min-width: 130px;
+}
+
+.tribeCheckbox {
+  vertical-align: middle;
+  margin-top: 1px;
+  box-shadow: none;
+}
+
+[dir="rtl"] .tribeCheckbox {
+  vertical-align: middle;
+  margin-top: 10px;
+  box-shadow: none;
+  height: 15px;
+}
+
+.radioOptions {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.radioOptions label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  flex-direction: column-reverse;
+}
+
+.radioOptions input[type="radio"] {
+  margin-right: 10px;
+  margin-top: 12px;
+  height: 14px;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.addAchievementButton {
+  margin: 15px;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+  .ndaModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+  }
+
+  .ndaModalContent {
+    position: relative;
+    margin: 5% auto;
+    background-color: #fff;
+    padding: 20px;
+    max-width: 400px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+
+  .ndaContent iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .ndaContent {
+    height: 600px;
+    overflow: hidden;
+  }
+
+  .ndaCloseBtn {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .ndaCloseBtn:hover { background-color: #0056b3; }
+
+  .ndaSection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 30px;
+  }
+
+  [dir="rtl"] .ndaSection {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  .ndaLink {
+    margin-top: 18px;
+    color: white;
+    font-size: 13px;
+  }
+
+  .submitBtn {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: not-allowed;
+  }
+
+  .submitBtn:enabled {
+    background-color: #28a745;
+    cursor: pointer;
+  }
+
+  .ndaCheckbox {
+    margin: 23px 0px 10px 0px;
+    height: 15px;
+    box-shadow: none;
+    width: 6%;
+  }
+
+  .referrerInfo {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .referrerInfo:global(.visible)  {
+    max-height: 600px;
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    margin: 20px 0;
+    padding: 20px;
+    width: 100%;
+    min-width: 300px;
+  }
+
+  .applyForm {
+    padding: 15px;
+    margin: 190px auto 30px;
+  }
+
+  .applyForm h1 { font-size: 1.2rem; margin-bottom: 10px; }
+  .applyForm legend { font-size: 1rem; }
+  .applyForm label { font-size: 0.85rem; }
+
+  .applyForm input,
+  .applyForm select,
+  .applyForm textarea {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  .applyForm textarea {
+    font-size: 0.9rem;
+    padding: 8px;
+    width: 346px !important;
+  }
+
+  .applyForm button { font-size: 0.95rem; padding: 12px; }
+
+  .tribalSection { display: flex; width: 100%; }
+
+  .radioOptions { padding-left: 15px; }
+
+  .tribeCheckboxLabel {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+    width: 100%;
+    min-width: 260px;
+  }
+
+  [dir="rtl"] .tribeCheckboxLabel {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+    width: 100%;
+    min-width: 130px;
+  }
+
+  .tribeCheckbox { vertical-align: middle; }
+
+  [dir="rtl"] .tribeCheckbox {
+    vertical-align: middle;
+    margin-top: 10px;
+    box-shadow: none;
+    height: 15px;
+  }
+
+  .guidelineHeading {
+    font-weight: 200;
+    font-size: 15px;
+    color: #c4a21e;
+    list-style-type: none;
+  }
+
+  .guidelineText {
+    font-weight: 200;
+    font-size: 14px;
+    color: #f9f9f9;
+    list-style-type: none;
+  }
+
+  [dir="rtl"] .guidelineText {
+    font-weight: 200;
+    font-size: 15px;
+    color: #f9f9f9;
+    list-style-type: none;
+  }
+
+  .achievementFieldset {
+    width: 100%;
+    min-width: 300px;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #1a3f6b;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .achievementFieldset ul {
+    font-size: 0.75rem;
+    margin: 15px 0 25px 5px;
+  }
+
+  .addAchievementButton,
+  .addAchievementButtonOrg {
+    width: 100%;
+    max-width: 250px;
+    margin: 10px auto;
+    font-size: 0.9rem;
+    padding: 10px;
+    border-radius: 5px;
+    background: #c4a21e;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .addAchievementButton:hover,
+  .addAchievementButtonOrg:hover { background: #16a085; }
+
+  [dir="rtl"] .achievementFieldset ul {
+    font-size: 0.75rem;
+    margin: 15px 0 25px 5px;
+  }
+
+  .achievementFieldset input,
+  .achievementFieldset textarea {
+    width: 100% !important;
+    max-width: 100%;
+    font-size: 0.85rem;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .achievementFieldset textarea { height: auto; }
+
+  .achievementFieldset ul li:before {
+    content: "\2714";
+    color: #c4a21e;
+    font-weight: bold;
+    display: inline-block;
+    left: 0;
+     margin-right: 8px;
+    font-size: 1.2rem;
+    list-style-type: none;
+  }
+
+  [dir="rtl"] .achievementFieldset ul li:before {
+  content: "\2714";
+  color: #c4a21e;   /* Matches your heading gold */
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;       /* Fixed width creates a nice vertical alignment */
+  margin-right: 8px;
+  flex-shrink: 0;
+  }
+
+  .achievementFieldset label {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+  }
+
+  .achievementFieldset input[type="file"] {
+    font-size: 0.85rem;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+}
+
+/* ===== Tablet ===== */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .applyForm { padding: 18px; }
+  .tribalSection { display: flex; width: 100%; }
+  .applyForm h1 { font-size: 1.7rem; }
+  .applyForm button { font-size: 1rem; padding: 14px; }
+
+  .tribeCheckboxLabel {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+    width: 100%;
+  }
+
+  .tribeCheckbox { vertical-align: middle; }
+  .radioOptions { padding-left: 20px; }
+}
+
+/* ===== Desktop ===== */
+@media (min-width: 1024px) {
+  .ndaModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+  }
+
+  .ndaModalContent {
+    position: relative;
+    margin: 5% auto;
+    background-color: #fff;
+    padding: 20px;
+    max-width: 800px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+
+  .ndaContent iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .ndaContent { height: 630px; overflow: hidden; }
+
+  .ndaCloseBtn {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .ndaCloseBtn:hover { background-color: #0056b3; }
+
+  .ndaSection {
+    margin: 40px 0px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .ndaSection {
+    margin: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    direction: rtl;
+  }
+
+  .ndaCheckbox {
+    margin-bottom: 0;
+    height: 16px;
+    margin-top: 0px;
+    box-shadow: none;
+  }
+
+  .ndaLink {
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+    width: 90%;
+    box-sizing: border-box;
+  }
+
+  .submitBtn {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: not-allowed;
+    font-family: GraphikWide-Thin, sans-serif;
+  }
+
+  .submitBtn:enabled {
+    background-color: #28a745;
+    cursor: pointer;
+  }
+
+  [dir="rtl"] .applyForm { direction: rtl; }
+
+  .applyForm { max-width: 850px; padding: 25px; }
+  .applyForm p { font-size: 1rem; }
+  .tribalSection { display: flex; width: 100%; }
+  .applyForm h1 { font-size: 1.7rem; }
+  .applyForm button { font-size: 1.1rem; }
+
+  .tribalSection {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+
+  [dir="rtl"] .tribalSection {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .radioOptions { padding-left: 30px; }
+
+  .tribeCheckboxLabel {
+    display: flex;
+    margin-right: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+    width: 100%;
+  }
+
+  [dir="rtl"] .tribeCheckboxLabel {
+    display: flex;
+    margin-right: 10px;
+    font-weight: 700;
+    vertical-align: middle;
+    width: 23%;
+    min-width: 130px;
+  }
+
+  .tribeCheckbox {
+    display: flex;
+    position: relative;
+    vertical-align: middle;
+    right: 260px;
+    margin-top: 12px;
+    height: 16px;
+  }
+
+  [dir="rtl"] .tribeCheckbox {
+    display: flex;
+    position: relative;
+    vertical-align: middle;
+    right: 0;
+    margin-top: 12px;
+    height: 16px;
+    box-shadow: none;
+    width: 18%;
+  }
+
+  .guidelinesList {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0 25px 5px; /* Adds space around the list */
+}
+
+  .guidelineHeading {
+    font-weight: 200;
+    font-size: 19px;
+    color: #c4a21e;
+    list-style-type: none;
+  }
+
+  .guidelineText {
+    font-weight: 200;
+    font-size: 19px;
+    color: #f9f9f9;
+    list-style-type: none;
+  }
+
+  .achievementFieldset ul li:before {
+    content: "\2714";
+    color: #c4a21e;
+    font-weight: bold;
+    display: inline-block;
+    left: 0;
+     margin-right: 8px;
+    font-size: 1.2rem;
+    list-style-type: none;
+  }
+
+  [dir="rtl"] .achievementFieldset ul li:before {
+  content: "\2714";
+  color: #c4a21e;   /* Matches your heading gold */
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;       /* Fixed width creates a nice vertical alignment */
+  margin-right: 8px;
+  flex-shrink: 0;
+  }
+
+  .addAchievementButton {
+    margin: 15px 15px 15px 0px;
+    width: 100%;
+    max-width: 250px;
+    font-family: GraphikWide-Thin, sans-serif;
+  }
+
+  [dir="rtl"] .addAchievementButton {
+    margin: 15px 0px 15px 15px;
+    width: 100%;
+    max-width: 250px;
+    font-family: GraphikWide-Thin, sans-serif;
+  }
+
+  .referrerInfo {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .referrerInfo:global(.visible)  {
+    max-height: 635px;
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    margin: 20px 0;
+    padding: 20px;
+  }
+}
+
+/* Helpers used by the React component */
+.fileSizeMessage { color: #cb4028; }
+.wordCountMessage {
+  color: #f7f7f7;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+.removeBtn {
+  margin-top: 10px;
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.addBtnDisabled {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+}
