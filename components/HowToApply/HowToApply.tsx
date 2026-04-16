@@ -336,6 +336,10 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   // ---------- Refs ----------
   const formRef = useRef<HTMLFormElement | null>(null)
 
+  // ---------- submit ----------
+
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
   // ---------- Submit-button enable logic ----------
   const isWordCountValid = useMemo(() => {
     const all = [...achievements, ...orgAchievements]
@@ -547,13 +551,13 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
     }
 
     try {
-      const res = await fetch(SUBMIT_URL, { method: 'POST', body: fd })
-      if (!res.ok) throw new Error(`Submit failed: ${res.status}`)
-      alert(t.alert_success)
-    } catch (err) {
-      console.error(err)
-      alert(t.alert_failure)
-    }
+          const res = await fetch(SUBMIT_URL, { method: 'POST', body: fd })
+          if (!res.ok) throw new Error(`Submit failed: ${res.status}`)
+          setSubmitSuccess(true)
+        } catch (err) {
+               console.error(err)
+               alert(t.alert_failure)
+        }
   }
 
   const reactId = useId();
@@ -1041,6 +1045,43 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
           </button>
         </form>
       </div>
+      {submitSuccess && (
+         <div className={styles.successOverlay} role="dialog" aria-modal="true">
+         <div className={styles.successModal}>
+         <div className={styles.successIcon} aria-hidden="true">
+        <svg viewBox="0 0 52 52" width="64" height="64">
+          <circle cx="26" cy="26" r="25" fill="none" stroke="#c4a21e" strokeWidth="2" />
+          <path
+            fill="none"
+            stroke="#c4a21e"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M14 27l7 7 17-17"
+          />
+        </svg>
+      </div>
+      <h2 className={styles.successTitle}>
+        {lang === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Application Submitted Successfully!'}
+      </h2>
+      <p className={styles.successMessage}>
+        {lang === 'ar'
+          ? 'تم استلام طلبك. سيتم إعادة تحميل الصفحة.'
+          : 'Your application has been received. The page will reload.'}
+      </p>
+      <button
+        type="button"
+        className={styles.successOkBtn}
+        onClick={() => window.location.reload()}
+        autoFocus
+      >
+        {lang === 'ar' ? 'موافق' : 'OK'}
+      </button>
+    </div>
+
+    
+  </div>
+)}
     </>
   )
 }
