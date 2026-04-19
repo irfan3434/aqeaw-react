@@ -9,13 +9,13 @@ const footerData = {
   en: {
     col1: {
       heading: 'About Award',
-      paragraph: 'The Dr. Ayed Alqarni Prize for Excellence celebrates outstanding achievements by individuals, teams, and organizations from the Balqarn tribes. Aligned with Saudi Vision 2030, the prize fosters creativity, innovation, and leadership, recognizing transformative contributions that inspire growth and development.',
+      paragraph: 'The Dr. Ayed Alqarni Prize for Excellence celebrates outstanding achievements by individuals, teams, and organizations from the sons and daughters of Bilqrin Governorate, as well as the sons and daughters of Bilqrin in Tihama and Al-Sarra. Aligned with Saudi Vision 2030, the prize fosters creativity, innovation, and leadership, recognizing transformative contributions that inspire growth and development.',
     },
     col2: {
       heading: 'Quick Links',
       links: [
         { label: 'Main Page',        href: '/' },
-        { label: 'About the Award',  href: '/About-Awad' },
+        { label: 'About the Award',  href: '/AboutAward' },
         { label: 'FAQ',              href: '/FAQs' },
         { label: 'How to Apply',     href: '/Eligibility-Criteria' },
       ],
@@ -33,13 +33,13 @@ const footerData = {
   ar: {
     col1: {
       heading: 'عن الجائزة',
-      paragraph: 'تحتفي جائزة التميز للدكتور عائض القرني بالإنجازات البارزة للأفراد والفرق والمنظمات من قبائل بلقرن. تماشياً مع رؤية السعودية 2030، تعزز الجائزة الإبداع والابتكار والقيادة، وتكرّم المساهمات التحويلية التي تلهم النمو والتطور.',
+      paragraph: 'تحتفي جائزة التميز للدكتور عائض القرني بالإنجازات البارزة للأفراد والفرق والمنظمات من أبناء وبنات محافظة بلقرن وكذلك أبناء وبنات بلقرن في تهامة والسراة. تماشياً مع رؤية السعودية 2030، تعزز الجائزة الإبداع والابتكار والقيادة، وتكرّم المساهمات التحويلية التي تلهم النمو والتطور.',
     },
     col2: {
       heading: 'روابط سريعة',
       links: [
         { label: 'الصفحة الرئيسية', href: '/' },
-        { label: 'عن الجائزة',       href: '/About-Awad' },
+        { label: 'عن الجائزة',       href: '/AboutAward' },
         { label: 'الأسئلة الشائعة',  href: '/FAQs' },
         { label: 'كيفية التقديم',    href: '/Eligibility-Criteria' },
       ],

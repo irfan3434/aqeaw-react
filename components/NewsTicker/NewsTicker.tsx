@@ -8,7 +8,7 @@ const tickerContent = {
   en: [
      "The nomination process for the second cycle of the Dr. Ayed Al-Qarni Award for Excellence began on 19-04-2026 AD, corresponding to 02-11-1447 AH.",
      "Nominations will continue to be accepted until Sunday, February 7, 2027 (corresponding to August 30, 1448 AH).",
-     "We are pleased to announce that the award has been expanded to include all sons and daughters of Balqarn Governorate.",
+     "The award has expanded to include all the people of Balqrin Governorate.",
      "The award also includes the sons and daughters of Balqarn in Tihama and Al-Sarra.",
      "Follow the website for updates.",
   ],
@@ -17,7 +17,7 @@ const tickerContent = {
 
     "بدأ استقبال المرشحين لجائزة الدكتور عائض القرني للتميز في دورتها الثانية من تاريخ 19-04-2026م الموافق 02-11-1447هـ",
     "يستمر قبول الترشيحات إلى يوم الاحد 07-02-2027م الموافق 30-08-1448هـ",
-    "نبشركم أن الجائزة توسعت لتشمل جميع أبناء وبنات محافظة بلقرن",
+    "توسعت الجائزة لتشمل جميع أبناء محافظة بلقرن",
     "الجائزة تشمل أيضاً أبناء وبنات بلقرن في تهامة والسراة",
     "تابعوا الموقع للمستجدات",
   ]

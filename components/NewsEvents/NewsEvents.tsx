@@ -6,7 +6,7 @@ import styles from './NewsEvents.module.css'
 
 const newsData = {
   en: {
-    title: '2026 Events Timeline',
+    title: 'Schedule of the events of the previous edition of the award in 2025',
     events: [
       { id: 'n-1', heading: 'Award and the platform inaugurated',           date: '01/09/2025' },
       { id: 'n-2', heading: 'Announced the start of accepting nominations',  date: '12/04/2026' },
@@ -17,7 +17,7 @@ const newsData = {
     ],
   },
   ar: {
-    title: 'جدول زمني لأحداث عام 2025',
+    title:   'جدول زمني لأحداث الدورة السابقة للجائزة عام 2025م',
     events: [
       { id: 'n-1', heading: 'تدشين الجائزة والمنصة',           date: '2025/01/09' },
       { id: 'n-2', heading: 'أعلن عن بدء قبول الترشيحات',      date: '12/04/2026' },
