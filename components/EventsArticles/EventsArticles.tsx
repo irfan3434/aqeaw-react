@@ -51,7 +51,7 @@ export default function EventsArticles() {
     { id: 'photos'   as Section, labelEn: 'Photos',                   labelAr: 'جميع الصور',              icon: '📷' },
     { id: 'articles' as Section, labelEn: 'Articles',                 labelAr: 'مقالات',           icon: '📰' },
     { id: 'videos'   as Section, labelEn: 'Videos',                   labelAr: 'مقاطع فيديو',         icon: '🎬' },
-    { id: 'pdfs'     as Section, labelEn: 'Decisions & Developments', labelAr: 'قرارات ومستجدات', icon: '📄' },
+    { id: 'pdfs'     as Section, labelEn: 'Award List', labelAr: 'لائحة الجائزة', icon: '📄' },
   ]
 
   const visiblePhotos   = photosData.slice(0, photosVisible)
