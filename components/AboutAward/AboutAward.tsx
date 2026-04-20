@@ -56,7 +56,7 @@ const content = {
       },
       {
         id: 'aa-dates',
-        heading: 'Dates of the Award in the First Cycle',
+        heading: 'Dates of the Award in the Second Cycle',
         type: 'list' as const,
         items: [
           'Acceptance of nominations for the second round begins on  19-04-2026 AD corresponding to 02-11-1447 AH Stay tuned for other dates details',
@@ -113,7 +113,7 @@ const content = {
       },
       {
         id: 'aa-dates',
-        heading: 'مواعيد الجائزة في الدورة الأولى',
+        heading: 'مواعيد الجائزة في الدورة الثانية',
         type: 'list' as const,
         items: [
           'يبدأ قبول الترشيحات للدورة الثانية بتاريخ 19-04-2026 م الموافق 02—11-1447هـ وترقبوا تفاصيل المواعيد الأخرى.'

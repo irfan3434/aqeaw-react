@@ -12,8 +12,8 @@ const winnersData = {
     winners: [
       { id: 'w-001', name: 'Dahim bin Mohammed Al-Huwais',      image: '/images/winner-1.webp' },
       { id: 'w-002', name: 'Ali bin Mohammed Al-Dawari',         image: '/images/winner-2.webp' },
-      { id: 'w-003', name: 'Badr bin Mohammed Al Raisa',         image: '/images/winner-3.webp' },
-      { id: 'w-004', name: "Bara'a bint Abdul Karim Al-Qarni",   image: '/images/winner-4.webp' },
+      { id: 'w-003', name: "Bara'a bint Abdul Karim Al-Qarni",   image: '/images/winner-4.webp' },
+      { id: 'w-004', name: 'Badr bin Mohammed Al Raisa',         image: '/images/winner-3.webp' },
       { id: 'w-005', name: 'Areej bint Abdullah Al-Qarni',       image: '/images/winner-5.webp' },
     ],
   },
@@ -23,8 +23,8 @@ const winnersData = {
     winners: [
       { id: 'w-001', name: 'دحيم بن محمد ال حويس',       image: '/images/winner-1.webp' },
       { id: 'w-002', name: 'علي بن محمد ال دواري',        image: '/images/winner-2.webp' },
-      { id: 'w-003', name: 'بدر بن محمد آل رئيسه',        image: '/images/winner-3.webp' },
-      { id: 'w-004', name: 'براء بنت عبدالكريم القرني',   image: '/images/winner-4.webp' },
+      { id: 'w-003', name: 'براء بنت عبدالكريم القرني',   image: '/images/winner-4.webp' },
+      { id: 'w-004', name: 'بدر بن محمد آل رئيسه',        image: '/images/winner-3.webp' }
       { id: 'w-005', name: 'أريج بن عبدالله القرني',      image: '/images/winner-5.webp' },
     ],
   },
