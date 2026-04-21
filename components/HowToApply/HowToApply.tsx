@@ -239,9 +239,9 @@ const content: Record<'en' | 'ar', Content> = {
     paragraph2: 'البريد الإلكتروني',
     paragraph3: 'رقم الجوال',
     paragraph4: ':اختر الانتماء',
-    paragraph5: 'السراة',
+    paragraph5: 'محافظة بلقرن والسراة',
     paragraph6: 'تهامة',
-    paragraph15: 'محافظة بلقرن والسراة أو تهامة',
+    paragraph15: '',
 
     paragraph70: 'المبادئ التوجيهية اللازمة:',
     paragraph71: 'يحق للمترشح أن يقدم أهم أعماله المميزة، وبحد أقصى 4 أعمال فقط.',
