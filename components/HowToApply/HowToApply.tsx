@@ -241,7 +241,7 @@ const content: Record<'en' | 'ar', Content> = {
     paragraph4: ':اختر الانتماء',
     paragraph5: 'السراة',
     paragraph6: 'تهامة',
-    paragraph15: 'اختر الانتماء المحدد:',
+    paragraph15: 'محافظة بلقرن والسراة أو تهامة',
 
     paragraph70: 'المبادئ التوجيهية اللازمة:',
     paragraph71: 'يحق للمترشح أن يقدم أهم أعماله المميزة، وبحد أقصى 4 أعمال فقط.',
