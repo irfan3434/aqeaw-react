@@ -59,7 +59,7 @@ export default function EventsArticles() {
   const visibleVideos   = videosData.slice(0, videosVisible)
   const visiblePdfs     = pdfsData.slice(0, pdfsVisible)
 
-  return (
+  return ( 
     <div className={styles.evWrapper}>
 
       {/* ── Hero ─────────────────────────────────────────── */}

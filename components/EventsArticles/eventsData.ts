@@ -60,7 +60,7 @@ export const articlesData: Article[] = [
     image: '/images/16.webp',
     dateEn: 'October 10, 2025',
     dateAr: '10 أكتوبر 2025م',
-    url: 'https://aqeaw.com/ar/pages/article-page',
+    url: 'https://shhab.com/show_all.php?id=1209',
   },
   {
     id: 2,
@@ -71,7 +71,7 @@ export const articlesData: Article[] = [
     image: '/images/article2.webp',
     dateEn: 'October 8, 2025',
     dateAr: '8 أكتوبر 2025م',
-    url: 'https://aqeaw.com/ar/pages/article2',
+    url: 'https://shhab.com/show_all.php?id=1270',
   },
   {
     id: 3,
@@ -82,7 +82,7 @@ export const articlesData: Article[] = [
     image: '/images/article3.webp',
     dateEn: 'October 12, 2025',
     dateAr: '12 أكتوبر 2025م',
-    url: 'https://aqeaw.com/ar/pages/article-3',
+    url: 'https://shhab.com/show_all.php?id=1277',
   },
   {
     id: 4,
@@ -93,7 +93,7 @@ export const articlesData: Article[] = [
     image: '/images/article4.webp',
     dateEn: 'October 5, 2025',
     dateAr: '5 أكتوبر 2025م',
-    url: 'https://aqeaw.com/ar/pages/article-4',
+    url: 'https://shhab.com/show_all.php?id=1269',
   },
   {
     id: 5,
@@ -104,7 +104,18 @@ export const articlesData: Article[] = [
     image: '/images/article5.png',
     dateEn: 'August 20, 2025',
     dateAr: '20 أغسطس 2025م',
-    url: 'https://aqeaw.com/ar/pages/article-5',
+    url: 'https://shhab.com/show_all.php?id=1226',
+  },
+  {
+    id: 6,
+    titleEn: 'The second edition of the Dr. Ayed Al-Qarni Award for Excellence has been launched.',
+    titleAr: 'انطلاق الدورة الثانية من جائزة الدكتور عائض القرني للتميز',
+    excerptEn: 'The Dr. Ayed Al-Qarni Award for Excellence was launched in its second edition via the official website, with a broader scope that includes the tribes of Balqarn Governorate',
+    excerptAr: 'انطلقت عبر الموقع الرسمي جائزة الدكتور عائض القرني للتميز في دورتها الثانية بحلة أوسع تشمل قبائل محافظة بلقرن إضافة إلى ما كانت',
+    image: '/images/article6.png',
+    dateEn: 'April 21, 2026',
+    dateAr: '21 أبريل 2026م',
+    url: 'https://shhab.com/show_all.php?id=1391',
   },
 ]
 
