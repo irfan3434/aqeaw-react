@@ -152,7 +152,7 @@ export default function ApplicationDetailPage() {
     adminApi
       .detail(tp, params.id)
       .then((r) => {
-        setDoc(r.doc as ApplicationDoc)
+        setDoc(r.doc as unknown as ApplicationDoc)
         setDocType(r.type)
       })
       .catch((e) => setError(e instanceof Error ? e.message : t.notFound))
