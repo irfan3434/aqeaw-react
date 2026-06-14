@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 import { connectDB } from './config/db.js'
 import applicationsRouter from './routes/applications.js'
+import adminRouter from './routes/admin.js'
 import { UPLOAD_DIR } from './middleware/upload.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -20,13 +21,11 @@ const CORS_ORIGINS = (process.env.CORS_ORIGINS || 'http://localhost:3000')
 
 const app = express()
 
-// Trust proxy (Heroku, etc.) so req.ip reflects the real client
 app.set('trust proxy', 1)
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Allow same-origin tools (curl, Postman) with no Origin header
       if (!origin) return cb(null, true)
       if (CORS_ORIGINS.includes(origin)) return cb(null, true)
       return cb(new Error(`CORS: origin ${origin} not allowed`))
@@ -35,20 +34,20 @@ app.use(
   })
 )
 
-// JSON parser is fine to enable, though the submit route uses multipart
 app.use(express.json({ limit: '1mb' }))
 
-// Health check
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }))
 
-// Serve uploaded files for retrieval (read-only). In production you'd put
-// these behind auth or move to S3/Cloudinary.
+// Public uploads — keep for backward compat / future use, but admin file
+// downloads go through the authenticated /admin/applications/file route.
 app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '1d' }))
 
-// API routes
+// Public submission API
 app.use('/', applicationsRouter)
 
-// Start
+// Admin API (login is public; everything else behind requireAdmin)
+app.use('/', adminRouter)
+
 async function start() {
   try {
     await connectDB(MONGODB_URI)

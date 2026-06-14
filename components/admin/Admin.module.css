@@ -1,0 +1,571 @@
+/* Admin dashboard styles — all selectors prefixed with 'admin' to avoid conflicts. */
+
+.adminPage {
+  min-height: 100vh;
+  background: #f4f6f9;
+  padding: 32px 24px;
+  font-family: Arial, sans-serif;
+  color: #1a3f6b;
+}
+
+.adminContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.adminHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.adminHeader h1 {
+  font-size: 1.6rem;
+  color: #1a3f6b;
+  margin: 0;
+}
+
+.adminLogoutBtn {
+  background: transparent;
+  border: 1px solid #1a3f6b;
+  color: #1a3f6b;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.adminLogoutBtn:hover {
+  background: #1a3f6b;
+  color: #fff;
+}
+
+/* ---------- Stats ---------- */
+.adminStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.adminStatCard {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.adminStatLabel {
+  font-size: 0.8rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.adminStatValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a3f6b;
+}
+
+.adminStatValueAccent {
+  color: #c4a21e;
+}
+
+/* ---------- Filters ---------- */
+.adminFilters {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.adminFilterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adminFilterGroup label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.adminFilterGroup input,
+.adminFilterGroup select {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.adminExportBtn {
+  padding: 9px 16px;
+  background: #c4a21e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.adminExportBtn:hover {
+  background: #a88817;
+}
+
+.adminExportBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ---------- Table (Desktop) ---------- */
+.adminTableWrap {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.adminTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.adminTable thead {
+  background: #1a3f6b;
+  color: #fff;
+}
+
+.adminTable th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+[dir="rtl"] .adminTable th {
+  text-align: right;
+}
+
+.adminTable tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.adminTable tbody tr:hover {
+  background: #f9fafb;
+}
+
+.adminTable td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+/* Mobile label — hidden on desktop, shown on mobile as card label */
+.adminTable td::before {
+  content: attr(data-label);
+  display: none;
+}
+
+.adminTypeBadge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.adminTypePersonal { background: #e0f2fe; color: #075985; }
+.adminTypeOrg { background: #fef3c7; color: #92400e; }
+
+.adminEmpty {
+  padding: 48px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.adminLoading {
+  padding: 48px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* ---------- Login ---------- */
+.adminLoginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a3f6b;
+  font-family: Arial, sans-serif;
+  padding: 16px;
+}
+
+.adminLoginCard {
+  background: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+.adminLoginCard h1 {
+  color: #1a3f6b;
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+}
+
+.adminLoginCard p {
+  color: #6b7280;
+  margin: 0 0 24px;
+  font-size: 0.9rem;
+}
+
+.adminLoginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adminLoginForm input {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.adminLoginForm button {
+  padding: 12px;
+  background: #c4a21e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adminLoginForm button:hover { background: #a88817; }
+.adminLoginForm button:disabled { background: #ccc; cursor: not-allowed; }
+
+.adminErrorMsg {
+  color: #cb4028;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* ---------- Detail view ---------- */
+.adminDetailPage {
+  min-height: 100vh;
+  background: #f4f6f9;
+  padding: 32px 24px;
+}
+
+.adminDetailBack {
+  background: none;
+  border: none;
+  color: #1a3f6b;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  padding: 0;
+}
+
+.adminDetailCard {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.adminDetailCard h2 {
+  color: #1a3f6b;
+  margin: 0 0 8px;
+}
+
+.adminDetailMeta {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+.adminDetailSection {
+  margin-bottom: 24px;
+}
+
+.adminDetailSection h3 {
+  color: #c4a21e;
+  font-size: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+  margin: 0 0 12px;
+}
+
+.adminDetailGrid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 8px 16px;
+  font-size: 0.95rem;
+}
+
+.adminDetailGrid dt {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.adminDetailGrid dd {
+  margin: 0;
+  color: #1a3f6b;
+  word-break: break-word;
+}
+
+.adminAchievement {
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.adminAchievement h4 {
+  margin: 0 0 6px;
+  color: #1a3f6b;
+  font-size: 0.95rem;
+}
+
+.adminAchievement p {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.adminFileBtn {
+  background: #1a3f6b;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.adminFileBtn:hover { background: #0f2a4a; }
+
+
+/* ====================================================================== */
+/*  RESPONSIVE — Tablet (max-width: 900px)                                */
+/* ====================================================================== */
+
+@media (max-width: 900px) {
+  .adminPage {
+    padding: 20px 16px;
+  }
+
+  .adminHeader h1 {
+    font-size: 1.3rem;
+  }
+
+  .adminStats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .adminStatValue {
+    font-size: 1.6rem;
+  }
+
+  .adminFilters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adminExportBtn {
+    grid-column: 1 / -1;
+  }
+
+  .adminDetailGrid {
+    grid-template-columns: 160px 1fr;
+    gap: 6px 12px;
+  }
+}
+
+
+/* ====================================================================== */
+/*  RESPONSIVE — Mobile (max-width: 640px)                                */
+/*  Table transforms into a card layout: each row becomes a stacked card. */
+/* ====================================================================== */
+
+@media (max-width: 640px) {
+  .adminPage {
+    padding: 84px 12px;
+  }
+
+  .adminHeader h1 {
+    font-size: 1.1rem;
+  }
+
+  .adminStats {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .adminStatCard {
+    padding: 14px;
+  }
+
+  .adminStatValue {
+    font-size: 1.4rem;
+  }
+
+  .adminFilters {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .adminExportBtn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---- Table → Cards ---- */
+  .adminTable thead {
+    display: none; /* hide column headers */
+  }
+
+  .adminTable,
+  .adminTable tbody,
+  .adminTable tr,
+  .adminTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .adminTable tbody tr {
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    position: relative;
+  }
+
+  .adminTable tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .adminTable td {
+    padding: 4px 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+  }
+
+  /* Show the data-label as a bold label on the left */
+  .adminTable td::before {
+    display: inline-block;
+    font-weight: 700;
+    color: #6b7280;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  [dir="rtl"] .adminTable td::before {
+    text-align: right;
+  }
+
+  /* Add some spacing between cards */
+  .adminTableWrap {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ---- Detail page ---- */
+  .adminDetailPage {
+    padding: 84px 12px;
+  }
+
+  .adminDetailCard {
+    padding: 16px;
+  }
+
+  .adminDetailCard h2 {
+    font-size: 1.1rem;
+  }
+
+  .adminDetailMeta {
+    font-size: 0.8rem;
+  }
+
+  .adminDetailGrid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .adminDetailGrid dt {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 8px;
+  }
+
+  .adminDetailGrid dd {
+    font-size: 0.92rem;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .adminAchievement {
+    padding: 10px;
+  }
+
+  .adminFileBtn {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  /* ---- Login ---- */
+  .adminLoginCard {
+    padding: 24px;
+  }
+
+  .adminLoginCard h1 {
+    font-size: 1.2rem;
+  }
+}
