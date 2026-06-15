@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import path from 'node:path'
 import { upload } from '../middleware/upload.js'
 import {
   PersonalApplication,
   OrganizationApplication,
 } from '../models/Application.js'
 import { sendSubmissionNotification } from '../services/mailer.js'
+import { uploadToGridFS } from '../services/gridfsStorage.js'
 
 const router = Router()
 
@@ -27,28 +27,47 @@ router.post(
 
       const asArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v])
 
-      const buildAchievements = (titles, descs, fileList) => {
+      const buildAchievements = async (titles, descs, fileList) => {
         const out = []
         for (let i = 0; i < titles.length; i++) {
+          let fileData = undefined
+
+          if (fileList[i] && fileList[i].buffer) {
+            try {
+              const result = await uploadToGridFS(
+                fileList[i].buffer,
+                fileList[i].originalname,
+                fileList[i].mimetype
+              )
+              fileData = {
+                fileId: result.fileId,
+                filename: result.filename,
+                originalName: fileList[i].originalname,
+                mimeType: fileList[i].mimetype,
+                size: result.size,
+              }
+              console.log(`[gridfs] Stored: ${result.filename} (${result.fileId})`)
+            } catch (err) {
+              console.error('[gridfs] Upload failed:', err)
+              fileData = {
+                filename: fileList[i].originalname,
+                originalName: fileList[i].originalname,
+                mimeType: fileList[i].mimetype,
+                size: fileList[i].size,
+              }
+            }
+          }
+
           out.push({
             title: titles[i] || '',
             description: descs[i] || '',
-            file: fileList[i]
-              ? {
-                  filename: fileList[i].filename,
-                  originalName: fileList[i].originalname,
-                  mimeType: fileList[i].mimetype,
-                  size: fileList[i].size,
-                  path: path.join('uploads', fileList[i].filename),
-                }
-              : undefined,
+            file: fileData,
           })
         }
         return out
       }
 
       const ip = req.ip
-
       let doc
       let type
 
@@ -57,6 +76,8 @@ router.post(
         const titles = asArray(body['achievementTitle[]'] ?? body.achievementTitle)
         const descs = asArray(body['description[]'] ?? body.description)
         const uploaded = files['upload[]'] || []
+
+        const achievements = await buildAchievements(titles, descs, uploaded)
 
         doc = await PersonalApplication.create({
           userType,
@@ -78,7 +99,7 @@ router.post(
           phone: body.phone,
           tribeChecked: body.tribeCheckbox === 'on',
           specificAffiliation: body.specificAffiliation || '',
-          achievements: buildAchievements(titles, descs, uploaded),
+          achievements,
           submittedFromIp: ip,
         })
         type = 'personal'
@@ -87,21 +108,21 @@ router.post(
         const descs = asArray(body['descriptionOrg[]'] ?? body.descriptionOrg)
         const uploaded = files['uploadOrg[]'] || []
 
+        const achievements = await buildAchievements(titles, descs, uploaded)
+
         doc = await OrganizationApplication.create({
           organizationName: body.organizationName,
           ownerName: body.ownerName,
           organizationEmail: body.organizationEmail,
           organizationNumber: body.organizationNumber,
-          achievements: buildAchievements(titles, descs, uploaded),
+          achievements,
           submittedFromIp: ip,
         })
         type = 'organization'
       }
 
-      // Respond immediately — don't make the user wait for SMTP.
       res.status(201).json({ ok: true, id: doc._id, type })
 
-      // Fire-and-forget email notification. Any error is logged inside mailer.
       sendSubmissionNotification(doc, type).catch((err) => {
         console.error('[submit-application] mailer threw:', err)
       })
@@ -110,7 +131,6 @@ router.post(
       if (err?.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).json({ error: 'A file exceeds the maximum allowed size.' })
       }
-      // Only send a response if headers weren't already flushed
       if (!res.headersSent) {
         return res.status(500).json({ error: 'Failed to save application.' })
       }

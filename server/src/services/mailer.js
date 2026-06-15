@@ -1,22 +1,9 @@
 import nodemailer from 'nodemailer'
-import path from 'node:path'
-import fs from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { buildSubmissionEmail } from './emailTemplate.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// uploads/ is at server/uploads (two levels up from src/services/)
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads')
+import { readGridFSToBuffer } from './gridfsStorage.js'
 
 let transporter = null
 
-/**
- * Lazily create the Nodemailer transport. Called from sendSubmissionNotification
- * so the server can still boot even if SMTP creds are missing — email will just
- * no-op with a warning log.
- */
 function getTransporter() {
   if (transporter) return transporter
 
@@ -33,7 +20,7 @@ function getTransporter() {
   transporter = nodemailer.createTransport({
     host,
     port,
-    secure: port === 465, // true for 465, false for 587/STARTTLS
+    secure: port === 465,
     auth: { user, pass },
   })
 
@@ -41,52 +28,41 @@ function getTransporter() {
 }
 
 /**
- * Build attachments array from the saved achievement documents.
- * Each achievement may have a .file with a path under uploads/.
+ * Build email attachments by reading file content from GridFS.
  */
-function buildAttachments(achievements) {
-  return achievements
-    .filter((a) => a?.file?.filename)
-    .map((a) => {
-      const filePath = path.join(UPLOAD_DIR, a.file.filename)
-      // Only attach if the file actually exists on disk.
-      // On Heroku's ephemeral FS, this file will still be present in the same
-      // request, but on a later restart it won't be — that's fine, we just skip it.
-      if (!fs.existsSync(filePath)) return null
-      return {
-        filename: a.file.originalName || a.file.filename,
-        path: filePath,
-      }
-    })
-    .filter(Boolean)
+async function buildAttachments(achievements) {
+  const attachments = []
+  for (const a of achievements) {
+    if (!a?.file?.fileId) continue
+    try {
+      const buffer = await readGridFSToBuffer(a.file.fileId)
+      attachments.push({
+        filename: a.file.originalName || a.file.filename || 'attachment',
+        content: buffer,
+        contentType: a.file.mimeType || 'application/octet-stream',
+      })
+    } catch (err) {
+      console.error(`[mailer] Failed to read file ${a.file.fileId}:`, err)
+    }
+  }
+  return attachments
 }
 
 /**
- * Send a notification email for a submitted application.
- * Fire-and-forget: never throws; errors are logged.
- *
- * @param {object} doc   The saved Mongoose document (personal or organization)
- * @param {'personal'|'organization'} type
+ * Send a notification email. Fire-and-forget.
  */
 export async function sendSubmissionNotification(doc, type) {
   const t = getTransporter()
-  if (!t) return // SMTP not configured — silently skip
+  if (!t) return
 
   const to = process.env.NOTIFY_TO || process.env.SMTP_USER
   const from = process.env.SMTP_FROM || process.env.SMTP_USER
 
   try {
     const { subject, html } = buildSubmissionEmail(doc, type)
-    const attachments = buildAttachments(doc.achievements || [])
+    const attachments = await buildAttachments(doc.achievements || [])
 
-    const info = await t.sendMail({
-      from,
-      to,
-      subject,
-      html,
-      attachments,
-    })
-
+    const info = await t.sendMail({ from, to, subject, html, attachments })
     console.log(`[mailer] Notification sent: ${info.messageId}`)
   } catch (err) {
     console.error('[mailer] Failed to send notification:', err)

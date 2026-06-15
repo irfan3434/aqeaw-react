@@ -1,8 +1,3 @@
-/**
- * Thin fetch wrapper for the admin API. Reads the token from localStorage and
- * attaches it as a Bearer. Throws on non-2xx; callers handle the error.
- */
-
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
 const TOKEN_KEY = 'aqeaw_admin_token'
@@ -110,16 +105,13 @@ export const adminApi = {
   detail: (type: 'personal' | 'organization', id: string) =>
     request<DetailResponse>(`/admin/applications/${type}/${id}`),
 
-  fileUrl: (filename: string) => {
-    // Token must be in the URL for downloads since <a href> can't set headers.
-    // We use a pre-signed approach: include the token as a query param and
-    // let a separate auth check handle it. For simplicity here, we just
-    // expose the authenticated-download URL and open it via fetch+blob.
-    return `${API_BASE}/admin/applications/file/${encodeURIComponent(filename)}`
-  },
-
-  async downloadFile(filename: string) {
-    const res = await fetch(adminApi.fileUrl(filename), {
+  /**
+   * Download a file from GridFS via the admin API.
+   * @param fileId - the GridFS ObjectId string
+   * @param originalName - optional filename for the download
+   */
+  async downloadFile(fileId: string, originalName?: string) {
+    const res = await fetch(`${API_BASE}/admin/applications/file/${encodeURIComponent(fileId)}`, {
       headers: { Authorization: `Bearer ${getToken() ?? ''}` },
     })
     if (!res.ok) throw new Error(`Download failed: ${res.status}`)
@@ -127,7 +119,7 @@ export const adminApi = {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = filename
+    a.download = originalName || fileId
     a.click()
     URL.revokeObjectURL(url)
   },

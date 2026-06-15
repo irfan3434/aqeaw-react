@@ -1,16 +1,10 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import { connectDB } from './config/db.js'
 import applicationsRouter from './routes/applications.js'
 import adminRouter from './routes/admin.js'
-import { UPLOAD_DIR } from './middleware/upload.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 const PORT = Number(process.env.PORT) || 5000
 const MONGODB_URI = process.env.MONGODB_URI
@@ -38,14 +32,7 @@ app.use(express.json({ limit: '1mb' }))
 
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }))
 
-// Public uploads — keep for backward compat / future use, but admin file
-// downloads go through the authenticated /admin/applications/file route.
-app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '1d' }))
-
-// Public submission API
 app.use('/', applicationsRouter)
-
-// Admin API (login is public; everything else behind requireAdmin)
 app.use('/', adminRouter)
 
 async function start() {

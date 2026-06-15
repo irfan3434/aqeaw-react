@@ -93,6 +93,7 @@ interface Achievement {
   title?: string
   description?: string
   file?: {
+    fileId?: string
     filename?: string
     originalName?: string
     mimeType?: string
@@ -159,9 +160,9 @@ export default function ApplicationDetailPage() {
       .finally(() => setLoading(false))
   }, [params.id, params.type, router, t.invalidType, t.notFound])
 
-  const handleDownload = async (filename: string) => {
+  const handleDownload = async (fileId: string, originalName?: string) => {
     try {
-      await adminApi.downloadFile(filename)
+      await adminApi.downloadFile(fileId, originalName)
     } catch (e) {
       alert(`${t.downloadFailed}: ${e instanceof Error ? e.message : String(e)}`)
     }
@@ -195,9 +196,7 @@ export default function ApplicationDetailPage() {
       </button>
 
       <div className={styles.adminDetailCard}>
-        <h2>
-          {docType === 'personal' ? doc.fullName : doc.organizationName}
-        </h2>
+        <h2>{docType === 'personal' ? doc.fullName : doc.organizationName}</h2>
         <div className={styles.adminDetailMeta}>
           {docType === 'personal' ? t.personalApp : t.orgApp}
           {' · '}
@@ -232,9 +231,7 @@ export default function ApplicationDetailPage() {
                   <dt>{t.referrerEmail}</dt><dd>{doc.referrer.email || '—'}</dd>
                   <dt>{t.referrerPhone}</dt><dd>{doc.referrer.phone || '—'}</dd>
                   <dt>{t.nominationReason}</dt>
-                  <dd style={{ whiteSpace: 'pre-wrap' }}>
-                    {doc.referrer.nominationReason || '—'}
-                  </dd>
+                  <dd style={{ whiteSpace: 'pre-wrap' }}>{doc.referrer.nominationReason || '—'}</dd>
                 </dl>
               </div>
             )}
@@ -259,17 +256,25 @@ export default function ApplicationDetailPage() {
             <div key={i} className={styles.adminAchievement}>
               <h4>{i + 1}. {a.title || t.noTitle}</h4>
               <p>{a.description || t.noDescription}</p>
-              {a.file?.filename ? (
-                <button
-                  className={styles.adminFileBtn}
-                  onClick={() => handleDownload(a.file!.filename!)}
-                >
-                  📎 {t.download} {a.file.originalName || a.file.filename}
-                  {a.file.size ? ` (${Math.round(a.file.size / 1024)} KB)` : ''}
-                </button>
-              ) : (
-                <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{t.noFile}</span>
-              )}
+              {a.file?.fileId ? (
+  <button
+    className={styles.adminFileBtn}
+    onClick={() => handleDownload(a.file!.fileId!, a.file!.originalName)}
+  >
+    📎 {t.download} {a.file.originalName || a.file.filename || 'file'}
+    {a.file.size ? ` (${Math.round(a.file.size / 1024)} KB)` : ''}
+  </button>
+) : a.file?.filename ? (
+  <span style={{ color: '#92400e', fontSize: '0.85rem' }}>
+    ⚠️ {a.file.originalName || a.file.filename}
+    {' — '}
+    {lang === 'ar'
+      ? 'تم تقديم الملف لكنه غير متاح للتحميل (طلب قديم)'
+      : 'File was submitted but is no longer downloadable (legacy submission)'}
+  </span>
+) : (
+  <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{t.noFile}</span>
+)}
             </div>
           ))}
         </div>
