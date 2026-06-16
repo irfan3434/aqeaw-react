@@ -88,6 +88,32 @@
   outline-offset: 2px;
 }
 
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adminBtn {
+    color: #fff;
+    cursor: pointer;
+    background-color: #276b1a;
+    border: 2px solid #0000;
+    border-radius: 5px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all .3s;
+    box-shadow: 0 2px 4px #0003;
+    text-decoration: none;
+}
+
+.adminBtn:hover {
+  background-color: #0f2a4a;
+  transform: translateY(-1px);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .topBar {
@@ -111,6 +137,11 @@
     padding: 5px 10px;
     font-size: 12px;
   }
+
+  .adminBtn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -129,5 +160,14 @@
 
   .socialIcon {
     font-size: 16px;
+  }
+
+  .adminBtn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .topBarRight {
+    gap: 6px;
   }
 }

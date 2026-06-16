@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFacebookF, faXTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons'
 import { useLanguage } from '../../lib/LanguageContext'
@@ -24,21 +25,26 @@ export default function TopBar() {
           </a>
         </div>
 
-        {/* Only render language buttons after client has mounted */}
-        {mounted && (
-          <div className={styles.languageSwitcher}>
-            <button
-              className={`${styles.languageBtn} ${lang === 'en' ? styles.active : ''}`}
-              onClick={() => toggleLanguage('en')}>
-              EN
-            </button>
-            <button
-              className={`${styles.languageBtn} ${lang === 'ar' ? styles.active : ''}`}
-              onClick={() => toggleLanguage('ar')}>
-              AR
-            </button>
-          </div>
-        )}
+        <div className={styles.topBarRight}>
+          <Link href="/admin/login" className={styles.adminBtn}>
+            {lang === 'ar' ? 'لوحة الإدارة' : 'ADMIN'}
+          </Link>
+
+          {mounted && (
+            <div className={styles.languageSwitcher}>
+              <button
+                className={`${styles.languageBtn} ${lang === 'en' ? styles.active : ''}`}
+                onClick={() => toggleLanguage('en')}>
+                EN
+              </button>
+              <button
+                className={`${styles.languageBtn} ${lang === 'ar' ? styles.active : ''}`}
+                onClick={() => toggleLanguage('ar')}>
+                AR
+              </button>
+            </div>
+          )}
+        </div>
 
       </div>
     </div>
