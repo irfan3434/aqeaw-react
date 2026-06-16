@@ -1,76 +1,133 @@
-/* Admin dashboard styles — all selectors prefixed with 'admin' to avoid conflicts. */
+/* ====================================================================== */
+/*  AQEAW Admin Dashboard — Enhanced Design                               */
+/*  Navy (#1a3f6b) + Gold (#c4a21e) brand palette                         */
+/*  All selectors prefixed with 'admin' to avoid conflicts.               */
+/* ====================================================================== */
 
+/* ---------- Page shell ---------- */
 .adminPage {
   min-height: 100vh;
-  background: #f4f6f9;
-  padding: 32px 24px;
-  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #f0f2f5 0%, #e4e8ef 100%);
+  padding: 30px 24px 40px;
+  font-family: 'Segoe UI', Arial, sans-serif;
   color: #1a3f6b;
 }
 
 .adminContainer {
-  max-width: 1200px;
+  max-width: 1260px;
   margin: 0 auto;
 }
 
+/* ---------- Header ---------- */
 .adminHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .adminHeader h1 {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
+  font-weight: 800;
   color: #1a3f6b;
   margin: 0;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.adminHeader h1::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, #c4a21e, #e8c84a);
+  border-radius: 2px;
+  margin-top: 6px;
 }
 
 .adminLogoutBtn {
   background: transparent;
-  border: 1px solid #1a3f6b;
+  border: 1.5px solid #1a3f6b;
   color: #1a3f6b;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 8px 20px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
 }
 
 .adminLogoutBtn:hover {
   background: #1a3f6b;
   color: #fff;
+  box-shadow: 0 4px 12px rgba(26, 63, 107, 0.3);
+  transform: translateY(-1px);
 }
 
 /* ---------- Stats ---------- */
 .adminStats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 18px;
+  margin-bottom: 28px;
 }
 
 .adminStatCard {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adminStatCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.adminStatCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1a3f6b, #2a5f9b);
+  border-radius: 14px 14px 0 0;
+}
+
+.adminStatCard:nth-child(2)::before {
+  background: linear-gradient(90deg, #c4a21e, #e8c84a);
+}
+
+.adminStatCard:nth-child(3)::before {
+  background: linear-gradient(90deg, #075985, #0ea5e9);
+}
+
+.adminStatCard:nth-child(4)::before {
+  background: linear-gradient(90deg, #92400e, #d97706);
 }
 
 .adminStatLabel {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-size: 0.72rem;
+  color: #8b95a5;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .adminStatValue {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.4rem;
+  font-weight: 800;
   color: #1a3f6b;
+  line-height: 1;
 }
 
 .adminStatValueAccent {
@@ -80,67 +137,92 @@
 /* ---------- Filters ---------- */
 .adminFilters {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border: none;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
-  gap: 12px;
+  gap: 14px;
   align-items: end;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .adminFilterGroup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .adminFilterGroup label {
-  font-size: 0.75rem;
-  color: #6b7280;
+  font-size: 0.7rem;
+  color: #8b95a5;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  font-weight: 700;
 }
 
 .adminFilterGroup input,
 .adminFilterGroup select {
-  padding: 8px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 0.88rem;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
+  background: #f8f9fb;
+  color: #1a3f6b;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.adminFilterGroup input:focus,
+.adminFilterGroup select:focus {
+  outline: none;
+  border-color: #c4a21e;
+  box-shadow: 0 0 0 3px rgba(196, 162, 30, 0.12);
+  background: #fff;
+}
+
+.adminFilterGroup input::placeholder {
+  color: #b0b8c6;
 }
 
 .adminExportBtn {
-  padding: 9px 16px;
-  background: #c4a21e;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #c4a21e, #d4b52e);
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   white-space: nowrap;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(196, 162, 30, 0.25);
 }
 
 .adminExportBtn:hover {
-  background: #a88817;
+  background: linear-gradient(135deg, #b3910e, #c4a21e);
+  box-shadow: 0 4px 16px rgba(196, 162, 30, 0.35);
+  transform: translateY(-1px);
 }
 
 .adminExportBtn:disabled {
-  background: #ccc;
+  background: #d1d5db;
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* ---------- Table (Desktop) ---------- */
 .adminTableWrap {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: none;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .adminTable {
@@ -150,17 +232,17 @@
 }
 
 .adminTable thead {
-  background: #1a3f6b;
+  background: linear-gradient(135deg, #1a3f6b, #1e4a7e);
   color: #fff;
 }
 
 .adminTable th {
-  padding: 12px;
+  padding: 14px 16px;
   text-align: left;
-  font-weight: 600;
-  font-size: 0.85rem;
+  font-weight: 700;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
 }
 
 [dir="rtl"] .adminTable th {
@@ -168,21 +250,27 @@
 }
 
 .adminTable tbody tr {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f0f2f5;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: all 0.15s ease;
 }
 
 .adminTable tbody tr:hover {
-  background: #f9fafb;
+  background: linear-gradient(90deg, rgba(196, 162, 30, 0.04), rgba(196, 162, 30, 0.02));
+  box-shadow: inset 3px 0 0 #c4a21e;
 }
 
 .adminTable td {
-  padding: 12px;
+  padding: 14px 16px;
   vertical-align: middle;
+  color: #374151;
 }
 
-/* Mobile label — hidden on desktop, shown on mobile as card label */
+.adminTable td:first-child {
+  font-weight: 600;
+  color: #1a3f6b;
+}
+
 .adminTable td::before {
   content: attr(data-label);
   display: none;
@@ -190,27 +278,36 @@
 
 .adminTypeBadge {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-.adminTypePersonal { background: #e0f2fe; color: #075985; }
-.adminTypeOrg { background: #fef3c7; color: #92400e; }
+.adminTypePersonal {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  color: #075985;
+}
+
+.adminTypeOrg {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+}
 
 .adminEmpty {
-  padding: 48px;
+  padding: 64px;
   text-align: center;
-  color: #6b7280;
+  color: #8b95a5;
+  font-size: 1rem;
 }
 
 .adminLoading {
-  padding: 48px;
+  padding: 64px;
   text-align: center;
-  color: #6b7280;
+  color: #8b95a5;
+  font-size: 1rem;
 }
 
 /* ---------- Login ---------- */
@@ -219,73 +316,131 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a3f6b;
-  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1a3f6b 0%, #0f2a4a 50%, #1a3f6b 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
   padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.adminLoginPage::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(196, 162, 30, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 60%, rgba(196, 162, 30, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .adminLoginCard {
   background: #fff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 48px 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+.adminLoginCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #c4a21e, #e8c84a);
+  border-radius: 0 0 4px 4px;
 }
 
 .adminLoginCard h1 {
   color: #1a3f6b;
   margin: 0 0 8px;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .adminLoginCard p {
-  color: #6b7280;
-  margin: 0 0 24px;
-  font-size: 0.9rem;
+  color: #8b95a5;
+  margin: 0 0 28px;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .adminLoginForm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .adminLoginForm input {
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 10px;
   font-size: 1rem;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
+  background: #f8f9fb;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.adminLoginForm input:focus {
+  outline: none;
+  border-color: #c4a21e;
+  box-shadow: 0 0 0 3px rgba(196, 162, 30, 0.12);
+  background: #fff;
 }
 
 .adminLoginForm button {
-  padding: 12px;
-  background: #c4a21e;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a3f6b, #1e4a7e);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(26, 63, 107, 0.25);
 }
 
-.adminLoginForm button:hover { background: #a88817; }
-.adminLoginForm button:disabled { background: #ccc; cursor: not-allowed; }
+.adminLoginForm button:hover {
+  background: linear-gradient(135deg, #0f2a4a, #1a3f6b);
+  box-shadow: 0 6px 20px rgba(26, 63, 107, 0.35);
+  transform: translateY(-1px);
+}
+
+.adminLoginForm button:disabled {
+  background: #d1d5db;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .adminErrorMsg {
-  color: #cb4028;
-  font-size: 0.9rem;
-  margin-top: 8px;
+  color: #dc2626;
+  font-size: 0.88rem;
+  margin-top: 4px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-radius: 6px;
+  border-left: 3px solid #dc2626;
 }
 
 /* ---------- Detail view ---------- */
 .adminDetailPage {
   min-height: 100vh;
-  background: #f4f6f9;
-  padding: 32px 24px;
+  background: linear-gradient(135deg, #f0f2f5 0%, #e4e8ef 100%);
+  padding: 30px 24px 40px;
 }
 
 .adminDetailBack {
@@ -293,92 +448,143 @@
   border: none;
   color: #1a3f6b;
   cursor: pointer;
-  font-size: 0.9rem;
-  margin-bottom: 16px;
-  padding: 0;
+  font-size: 0.92rem;
+  margin-bottom: 20px;
+  padding: 8px 0;
+  font-weight: 600;
+  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adminDetailBack:hover {
+  color: #c4a21e;
 }
 
 .adminDetailCard {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 900px;
+  border: none;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 920px;
   margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .adminDetailCard h2 {
   color: #1a3f6b;
   margin: 0 0 8px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .adminDetailMeta {
-  color: #6b7280;
+  color: #8b95a5;
   font-size: 0.85rem;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f2f5;
 }
 
 .adminDetailSection {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .adminDetailSection h3 {
-  color: #c4a21e;
-  font-size: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 6px;
-  margin: 0 0 12px;
+  color: #1a3f6b;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding-bottom: 8px;
+  margin: 0 0 16px;
+  position: relative;
+}
+
+.adminDetailSection h3::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 3px;
+  background: linear-gradient(90deg, #c4a21e, #e8c84a);
+  border-radius: 2px;
+  margin-top: 8px;
 }
 
 .adminDetailGrid {
   display: grid;
   grid-template-columns: 200px 1fr;
-  gap: 8px 16px;
+  gap: 10px 20px;
   font-size: 0.95rem;
 }
 
 .adminDetailGrid dt {
-  color: #6b7280;
-  font-weight: 600;
+  color: #8b95a5;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 2px;
 }
 
 .adminDetailGrid dd {
   margin: 0;
   color: #1a3f6b;
   word-break: break-word;
+  font-weight: 500;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f6f7f9;
 }
 
 .adminAchievement {
-  background: #f9fafb;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  background: linear-gradient(135deg, #f8f9fb, #f3f4f8);
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #eceef3;
+  transition: border-color 0.2s;
+}
+
+.adminAchievement:hover {
+  border-color: #d4d8e0;
 }
 
 .adminAchievement h4 {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   color: #1a3f6b;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .adminAchievement p {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   font-size: 0.9rem;
-  color: #374151;
+  color: #4b5563;
   white-space: pre-wrap;
+  line-height: 1.6;
 }
 
 .adminFileBtn {
-  background: #1a3f6b;
+  background: linear-gradient(135deg, #1a3f6b, #1e4a7e);
   color: #fff;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 10px 18px;
+  border-radius: 8px;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(26, 63, 107, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.adminFileBtn:hover { background: #0f2a4a; }
+.adminFileBtn:hover {
+  background: linear-gradient(135deg, #0f2a4a, #1a3f6b);
+  box-shadow: 0 4px 12px rgba(26, 63, 107, 0.3);
+  transform: translateY(-1px);
+}
 
 
 /* ====================================================================== */
@@ -387,11 +593,11 @@
 
 @media (max-width: 900px) {
   .adminPage {
-    padding: 20px 16px;
+    padding: 90px 16px 32px;
   }
 
   .adminHeader h1 {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
   }
 
   .adminStats {
@@ -400,7 +606,7 @@
   }
 
   .adminStatValue {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .adminFilters {
@@ -415,21 +621,29 @@
     grid-template-columns: 160px 1fr;
     gap: 6px 12px;
   }
+
+  .adminDetailCard {
+    padding: 24px;
+  }
 }
 
 
 /* ====================================================================== */
 /*  RESPONSIVE — Mobile (max-width: 640px)                                */
-/*  Table transforms into a card layout: each row becomes a stacked card. */
 /* ====================================================================== */
 
 @media (max-width: 640px) {
   .adminPage {
-    padding: 84px 12px;
+    padding: 84px 12px 24px;
   }
 
   .adminHeader h1 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+  }
+
+  .adminHeader h1::after {
+    width: 32px;
+    height: 2px;
   }
 
   .adminStats {
@@ -438,26 +652,34 @@
   }
 
   .adminStatCard {
-    padding: 14px;
+    padding: 16px;
+    border-radius: 10px;
   }
 
   .adminStatValue {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
+  }
+
+  .adminStatLabel {
+    font-size: 0.68rem;
   }
 
   .adminFilters {
     grid-template-columns: 1fr;
     gap: 10px;
+    border-radius: 10px;
+    padding: 14px;
   }
 
   .adminExportBtn {
     width: 100%;
     text-align: center;
+    padding: 12px;
   }
 
   /* ---- Table → Cards ---- */
   .adminTable thead {
-    display: none; /* hide column headers */
+    display: none;
   }
 
   .adminTable,
@@ -469,13 +691,18 @@
   }
 
   .adminTable tbody tr {
-    padding: 14px;
+    padding: 16px;
     margin-bottom: 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid #e2e6ed;
+    border-radius: 12px;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     position: relative;
+    transition: box-shadow 0.2s;
+  }
+
+  .adminTable tbody tr:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
   .adminTable tbody tr:last-child {
@@ -483,23 +710,31 @@
   }
 
   .adminTable td {
-    padding: 4px 0;
+    padding: 5px 0;
     border: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.88rem;
+    color: #374151;
   }
 
-  /* Show the data-label as a bold label on the left */
+  .adminTable td:first-child {
+    padding-top: 0;
+  }
+
+  .adminTable td:last-child {
+    padding-bottom: 0;
+  }
+
   .adminTable td::before {
     display: inline-block;
     font-weight: 700;
-    color: #6b7280;
-    font-size: 0.78rem;
+    color: #8b95a5;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    min-width: 100px;
+    letter-spacing: 0.04em;
+    min-width: 95px;
     flex-shrink: 0;
   }
 
@@ -507,65 +742,75 @@
     text-align: right;
   }
 
-  /* Add some spacing between cards */
   .adminTableWrap {
     background: transparent;
     border: none;
     box-shadow: none;
+    border-radius: 0;
   }
 
   /* ---- Detail page ---- */
   .adminDetailPage {
-    padding: 84px 12px;
+    padding: 84px 12px 24px;
   }
 
   .adminDetailCard {
-    padding: 16px;
+    padding: 20px;
+    border-radius: 12px;
   }
 
   .adminDetailCard h2 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 
   .adminDetailMeta {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .adminDetailGrid {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 2px;
   }
 
   .adminDetailGrid dt {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    margin-top: 8px;
+    font-size: 0.72rem;
+    margin-top: 10px;
   }
 
   .adminDetailGrid dd {
     font-size: 0.92rem;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 10px;
   }
 
   .adminAchievement {
-    padding: 10px;
+    padding: 14px;
+    border-radius: 10px;
   }
 
   .adminFileBtn {
     width: 100%;
     text-align: center;
-    padding: 10px;
-    font-size: 0.9rem;
+    justify-content: center;
+    padding: 12px;
+    font-size: 0.88rem;
+    border-radius: 8px;
   }
 
   /* ---- Login ---- */
   .adminLoginCard {
-    padding: 24px;
+    padding: 28px 24px;
+    border-radius: 14px;
   }
 
   .adminLoginCard h1 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+  }
+
+  .adminLoginForm input {
+    padding: 12px 14px;
+  }
+
+  .adminLoginForm button {
+    padding: 12px;
   }
 }
