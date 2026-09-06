@@ -236,13 +236,23 @@
 
   .ndaModalContent {
     position: relative;
-    margin: 5% auto;
+    margin: 5vh auto;
     background-color: #fff;
     padding: 20px;
+    width: 92%;
     max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     text-align: center;
+  }
+
+  .ndaModalContent h2 {
+    color: #1a3f6b;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
   }
 
   .ndaContent iframe {
@@ -252,8 +262,10 @@
   }
 
   .ndaContent {
-    height: 600px;
+    height: 60vh;
+    min-height: 300px;
     overflow: hidden;
+    margin-bottom: 12px;
   }
 
   .ndaCloseBtn {
@@ -273,19 +285,20 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    gap: 30px;
+    gap: 12px;
+    margin: 20px 0;
   }
 
   [dir="rtl"] .ndaSection {
-    display: flex;
     flex-direction: row-reverse;
-    align-items: center;
+    justify-content: flex-start;
   }
 
-  .ndaLink {
-    margin-top: 18px;
+  .ndaSection .ndaLink {
+    margin: 0;
     color: white;
     font-size: 13px;
+    line-height: 1.4;
   }
 
   .submitBtn {
@@ -303,11 +316,14 @@
     cursor: pointer;
   }
 
-  .ndaCheckbox {
-    margin: 23px 0px 10px 0px;
-    height: 15px;
+  .ndaSection .ndaCheckbox {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
     box-shadow: none;
-    width: 6%;
   }
 
   .referrerInfo {
@@ -322,18 +338,19 @@
   }
 
   .referrerInfo:global(.visible)  {
-    max-height: 600px;
+    max-height: 1500px;
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
+    overflow: visible;
     margin: 20px 0;
     padding: 20px;
     width: 100%;
-    min-width: 300px;
   }
 
   .applyForm {
     padding: 15px;
+    /* Top margin clears the fixed TopBar+Navbar (bottom edge ~171px on mobile). */
     margin: 190px auto 30px;
   }
 
@@ -351,7 +368,8 @@
   .applyForm textarea {
     font-size: 0.9rem;
     padding: 8px;
-    width: 346px !important;
+    width: 100% !important;
+    max-width: 100%;
   }
 
   .applyForm button { font-size: 0.95rem; padding: 12px; }
@@ -366,7 +384,7 @@
     font-weight: bold;
     vertical-align: middle;
     width: 100%;
-    min-width: 260px;
+    min-width: 0;
   }
 
   [dir="rtl"] .tribeCheckboxLabel {
@@ -375,10 +393,10 @@
     font-weight: bold;
     vertical-align: middle;
     width: 100%;
-    min-width: 130px;
+    min-width: 0;
   }
 
-  .tribeCheckbox { vertical-align: middle; }
+  .tribeCheckbox { vertical-align: middle; flex-shrink: 0; }
 
   [dir="rtl"] .tribeCheckbox {
     vertical-align: middle;
@@ -410,9 +428,9 @@
 
   .achievementFieldset {
     width: 100%;
-    min-width: 300px;
+    max-width: 100%;
     margin: 10px auto;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     background-color: #1a3f6b;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -420,7 +438,8 @@
 
   .achievementFieldset ul {
     font-size: 0.75rem;
-    margin: 15px 0 25px 5px;
+    margin: 15px 0 25px;
+    padding-left: 20px;
   }
 
   .addAchievementButton,
@@ -443,7 +462,9 @@
 
   [dir="rtl"] .achievementFieldset ul {
     font-size: 0.75rem;
-    margin: 15px 0 25px 5px;
+    margin: 15px 0 25px;
+    padding-left: 0;
+    padding-right: 20px;
   }
 
   .achievementFieldset input,
