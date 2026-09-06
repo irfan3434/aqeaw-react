@@ -374,35 +374,35 @@
 
   .applyForm button { font-size: 0.95rem; padding: 12px; }
 
-  .tribalSection { display: flex; width: 100%; }
+  .tribalSection {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
 
   .radioOptions { padding-left: 15px; }
 
-  .tribeCheckboxLabel {
+  /* Label sizes to its text so the checkbox sits neatly beside it
+     (higher specificity than the base `.applyForm label` / `.applyForm input`). */
+  .tribalSection .tribeCheckboxLabel {
     display: inline-block;
-    margin-right: 10px;
-    font-weight: bold;
-    vertical-align: middle;
-    width: 100%;
+    width: auto;
     min-width: 0;
+    margin: 0;
+    font-weight: bold;
   }
 
-  [dir="rtl"] .tribeCheckboxLabel {
-    display: inline-block;
-    margin-right: 10px;
-    font-weight: bold;
-    vertical-align: middle;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .tribeCheckbox { vertical-align: middle; flex-shrink: 0; }
-
-  [dir="rtl"] .tribeCheckbox {
-    vertical-align: middle;
-    margin-top: 10px;
+  .tribalSection .tribeCheckbox {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
     box-shadow: none;
-    height: 15px;
+    vertical-align: middle;
   }
 
   .guidelineHeading {
