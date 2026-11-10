@@ -4,3 +4,7 @@ uploads/*
 !uploads/.gitkeep
 *.log
 .DS_Store
+
+# One-off migration input: real applicants' CVs and identity documents.
+# Never commit these.
+migrate-files/

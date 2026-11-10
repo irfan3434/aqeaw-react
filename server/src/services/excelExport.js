@@ -5,7 +5,20 @@ import ExcelJS from 'exceljs'
  * each row is a submission, with columns for every field. Achievements
  * are collapsed into a single multi-line cell since they're 1..4 per row.
  */
-export async function buildApplicationsWorkbook(personalDocs, orgDocs) {
+const RESULT_LABELS = { winner: 'Winner / فائز', notWinner: 'Lost / خسران', pending: 'Pending / قيد التحكيم' }
+
+export async function buildApplicationsWorkbook(personalDocs, orgDocs, summaries = new Map(), resultOf = () => 'pending') {
+  // Average judge score per application (empty when nobody has scored it yet)
+  const score = (d) => {
+    const e = summaries.get(String(d._id))
+    return {
+      avgScore: e ? `${e.avg} / ${e.maxTotal}` : '',
+      judgesCount: e ? e.count : 0,
+      judgeScores: e ? e.judges.map((j) => `${j.name}: ${j.total}`).join('\n') : '',
+      result: RESULT_LABELS[resultOf(e)],
+    }
+  }
+
   const wb = new ExcelJS.Workbook()
   wb.creator = 'AQEAW Admin'
   wb.created = new Date()
@@ -29,6 +42,10 @@ export async function buildApplicationsWorkbook(personalDocs, orgDocs) {
     { header: 'Nomination Reason', key: 'nominationReason', width: 40 },
     { header: 'Achievements', key: 'achievements', width: 60 },
     { header: 'Files', key: 'files', width: 40 },
+    { header: 'Avg Score', key: 'avgScore', width: 14 },
+    { header: 'Judges', key: 'judgesCount', width: 9 },
+    { header: 'Score per Judge', key: 'judgeScores', width: 28 },
+    { header: 'Result', key: 'result', width: 22 },
   ]
 
   for (const d of personalDocs) {
@@ -54,6 +71,7 @@ export async function buildApplicationsWorkbook(personalDocs, orgDocs) {
         .filter((a) => a.file?.filename)
         .map((a) => a.file.originalName || a.file.filename)
         .join('\n'),
+      ...score(d),
     })
   }
 
@@ -68,6 +86,10 @@ export async function buildApplicationsWorkbook(personalDocs, orgDocs) {
     { header: 'Phone', key: 'organizationNumber', width: 18 },
     { header: 'Achievements', key: 'achievements', width: 60 },
     { header: 'Files', key: 'files', width: 40 },
+    { header: 'Avg Score', key: 'avgScore', width: 14 },
+    { header: 'Judges', key: 'judgesCount', width: 9 },
+    { header: 'Score per Judge', key: 'judgeScores', width: 28 },
+    { header: 'Result', key: 'result', width: 22 },
   ]
 
   for (const d of orgDocs) {
@@ -85,6 +107,7 @@ export async function buildApplicationsWorkbook(personalDocs, orgDocs) {
         .filter((a) => a.file?.filename)
         .map((a) => a.file.originalName || a.file.filename)
         .join('\n'),
+      ...score(d),
     })
   }
 

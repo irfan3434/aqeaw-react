@@ -312,7 +312,11 @@
 
 /* ---------- Login ---------- */
 .adminLoginPage {
-  min-height: 100vh;
+  /* Fills the viewport BELOW the fixed TopBar + Navbar — `main` is pushed down
+     by that much in globals.css. A plain 100vh overflows by exactly that
+     amount, which lets the card scroll up behind the header as soon as an
+     input takes focus. */
+  min-height: calc(100vh - 171px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,6 +337,13 @@
   background: radial-gradient(circle at 30% 40%, rgba(196, 162, 30, 0.08) 0%, transparent 50%),
               radial-gradient(circle at 70% 60%, rgba(196, 162, 30, 0.05) 0%, transparent 50%);
   pointer-events: none;
+}
+
+/* Matches the mobile navbar height set on `main` in globals.css. */
+@media (max-width: 768px) {
+  .adminLoginPage {
+    min-height: calc(100vh - 110px);
+  }
 }
 
 .adminLoginCard {
@@ -423,6 +434,72 @@
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Higher specificity than `.adminLoginForm input` above, which sets font-size. */
+.adminLoginForm .adminCodeInput {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* Secondary actions on the verification step. These are plain text buttons, so
+   each rule must out-rank the primary `.adminLoginForm button` styles above —
+   same specificity, won on source order by sitting after them. */
+.adminLoginAlt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.adminLoginAlt button,
+.adminLoginAlt button:hover,
+.adminLoginAlt button:disabled {
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  transform: none;
+  color: #1a3f6b;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.adminLoginAlt button:hover:not(:disabled) {
+  color: #c4a21e;
+  text-decoration: underline;
+}
+
+.adminLoginAlt button:disabled {
+  color: #9aa3b0;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.adminNoticeMsg {
+  color: #166534;
+  font-size: 0.88rem;
+  margin-top: 4px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 6px;
+  border-left: 3px solid #16a34a;
+}
+
+/* Attribute selectors out-rank the single-class rules, so order doesn't matter. */
+[dir='rtl'] .adminNoticeMsg {
+  border-left: none;
+  border-right: 3px solid #16a34a;
+}
+
+[dir='rtl'] .adminErrorMsg {
+  border-left: none;
+  border-right: 3px solid #dc2626;
 }
 
 .adminErrorMsg {
