@@ -357,10 +357,15 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   const isSubmitEnabled = ndaChecked && isWordCountValid && isFileSizeValid
 
   // ---------- Reset transient UI state on language flip ----------
-  useEffect(() => {
+  // React's documented "adjust state when a prop changes" pattern: compare
+  // against the previous value during render rather than resetting in an
+  // effect, which would paint the stale message once before clearing it.
+  const [prevLang, setPrevLang] = useState(lang)
+  if (prevLang !== lang) {
+    setPrevLang(lang)
     setNominationMessage({ text: '', color: '#f7f7f7' })
     setAffiliationError(false)
-  }, [lang])
+  }
 
   // ---------- Fade-in fieldsets via IntersectionObserver ----------
   useEffect(() => {
