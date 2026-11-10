@@ -10,6 +10,7 @@ import {
   type ApplicationListItem,
   type StatsResponse,
   type ListFilters,
+  type Role,
 } from '../../lib/adminApi'
 import styles from '../../components/admin/Admin.module.css'
 
@@ -17,6 +18,7 @@ const content = {
   en: {
     title: 'Admin Dashboard',
     signOut: 'Sign out',
+    accounts: 'Accounts',
     statTotal: 'Total',
     statThisWeek: 'This Week',
     statPersonal: 'Personal',
@@ -49,6 +51,7 @@ const content = {
   ar: {
     title: 'لوحة الإدارة',
     signOut: 'تسجيل الخروج',
+    accounts: 'الحسابات',
     statTotal: 'الإجمالي',
     statThisWeek: 'هذا الأسبوع',
     statPersonal: 'أفراد',
@@ -92,6 +95,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null)
   const [items, setItems] = useState<ApplicationListItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState<Role | null>(null)
   const [exporting, setExporting] = useState(false)
 
   const [type, setType] = useState<ListFilters['type']>('all')
@@ -116,14 +120,22 @@ export default function AdminDashboardPage() {
     }
   }, [type, search, affiliation, from, to])
 
-  useEffect(() => {
-    load()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
+  // This debounced effect also runs on mount, so there is no separate mount
+  // fetch — having both made every dashboard visit load stats and the list twice.
   useEffect(() => {
     const id = setTimeout(() => load(), 250)
     return () => clearTimeout(id)
   }, [load])
+
+  // The Accounts link is superadmin-only. The page itself re-checks server-side.
+  useEffect(() => {
+    adminApi
+      .me()
+      .then(({ user }) => setRole(user.role))
+      .catch(() => {
+        /* a failure here just means no link; every other call reports errors */
+      })
+  }, [])
 
   const handleExport = async () => {
     setExporting(true)
@@ -160,9 +172,19 @@ export default function AdminDashboardPage() {
       <div className={styles.adminContainer}>
         <div className={styles.adminHeader}>
           <h1>{t.title}</h1>
-          <button className={styles.adminLogoutBtn} onClick={handleLogout}>
-            {t.signOut}
-          </button>
+          <div className={styles.adminHeaderActions}>
+            {role === 'superadmin' && (
+              <button
+                className={styles.adminLogoutBtn}
+                onClick={() => router.push('/admin/users')}
+              >
+                {t.accounts}
+              </button>
+            )}
+            <button className={styles.adminLogoutBtn} onClick={handleLogout}>
+              {t.signOut}
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

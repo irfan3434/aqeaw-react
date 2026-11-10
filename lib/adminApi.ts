@@ -100,8 +100,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new Error('Unauthorized')
   }
   if (!res.ok) {
+    // Parse the API's {error} so callers can show it, and keep the status so a
+    // 403 (signed in, wrong role) can be told apart from a real failure.
     const text = await res.text().catch(() => '')
-    throw new Error(`API ${res.status}: ${text || res.statusText}`)
+    let message = text || res.statusText
+    try {
+      const parsed = JSON.parse(text) as { error?: unknown }
+      if (typeof parsed.error === 'string') message = parsed.error
+    } catch {
+      /* not JSON — keep the raw text */
+    }
+    throw new ApiError(res.status, message)
   }
   return res.json() as Promise<T>
 }
@@ -148,11 +157,45 @@ export interface DetailResponse {
 
 // ---------- Login ----------
 
+export type Role = 'superadmin' | 'admin' | 'judge'
+
 export interface AdminUser {
   id: string
   username: string
   name: string
-  role: 'admin' | 'judge'
+  role: Role
+}
+
+/** A dashboard account as the superadmin-only /admin/users endpoints return it. */
+export interface ManagedUser {
+  _id: string
+  username: string
+  name: string
+  role: Role
+  /** Empty string when two-step email login is off for this account. */
+  email: string
+  active: boolean
+  lastLoginAt: string | null
+  createdAt: string
+  /** Evaluations submitted — only ever non-zero for judges. */
+  evaluations: number
+}
+
+export interface NewUser {
+  username: string
+  name: string
+  role: Role
+  password: string
+  email?: string
+}
+
+/** Every field optional: only what you send is changed. */
+export interface UserPatch {
+  name?: string
+  role?: Role
+  password?: string
+  email?: string
+  active?: boolean
 }
 
 /** Signed in — the account has no email, so no code was needed. */
@@ -194,6 +237,30 @@ export const adminApi = {
   /** Sends a fresh code. The previous one keeps working in case it arrives late. */
   resendLoginCode: (challenge: string) =>
     postJson<{ ok: true }>('/admin/login/resend', { challenge }),
+
+  /** Who am I — any signed-in dashboard account can call this. */
+  me: () => request<{ user: ManagedUser }>('/admin/me'),
+
+  // ---- Account management (superadmin only; others get 403) ----
+
+  listUsers: () => request<{ users: ManagedUser[] }>('/admin/users'),
+
+  createUser: (user: NewUser) =>
+    request<{ user: ManagedUser }>('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
+    }),
+
+  updateUser: (id: string, patch: UserPatch) =>
+    request<{ user: ManagedUser }>(`/admin/users/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    }),
+
+  deleteUser: (id: string) =>
+    request<{ ok: true }>(`/admin/users/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
 
   stats: () => request<StatsResponse>('/admin/stats'),
 

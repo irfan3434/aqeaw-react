@@ -80,5 +80,7 @@ export function requireRole(...roles) {
   }
 }
 
-export const requireAdmin = requireRole('admin')
+// A superadmin can do everything an admin can, so it passes the admin guard too.
+export const requireAdmin = requireRole('admin', 'superadmin')
+export const requireSuperadmin = requireRole('superadmin')
 export const requireJudge = requireRole('judge')

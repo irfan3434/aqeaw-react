@@ -8,7 +8,7 @@ import {
 import { Evaluation } from '../models/Evaluation.js'
 import { User } from '../models/User.js'
 import { CRITERIA, MAX_TOTAL } from '../config/criteria.js'
-import { requireAdmin } from '../middleware/adminAuth.js'
+import { requireAdmin, requireSuperadmin } from '../middleware/adminAuth.js'
 import { candidateCode } from '../services/anonymize.js'
 import { hashPassword } from '../services/passwords.js'
 import { Settings, getJudgingSettings, resultFor } from '../models/Settings.js'
@@ -227,6 +227,7 @@ router.get('/admin/applications/file/:fileId', async (req, res) => {
 const USERNAME_RE = /^[a-z0-9._-]{3,32}$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const cleanEmail = (v) => String(v || '').trim().toLowerCase()
+const ROLES = ['superadmin', 'admin', 'judge']
 
 function publicUser(u) {
   return {
@@ -235,8 +236,14 @@ function publicUser(u) {
   }
 }
 
-/* GET /admin/me */
+/* GET /admin/me — any signed-in dashboard user needs to know who they are. */
 router.get('/admin/me', (req, res) => res.json({ user: publicUser(req.user) }))
+
+/* -------------------------------------------------------------------------- */
+/*  Everything below manages accounts, so it is superadmin-only. Admins get    */
+/*  403 here while keeping the rest of the dashboard.                          */
+/* -------------------------------------------------------------------------- */
+router.use('/admin/users', requireSuperadmin)
 
 router.get('/admin/users', async (_req, res) => {
   try {
@@ -265,7 +272,7 @@ router.post('/admin/users', async (req, res) => {
       return res.status(400).json({ error: 'Username must be 3–32 characters: English letters, numbers, . _ -' })
     }
     if (!name) return res.status(400).json({ error: 'Name is required' })
-    if (role !== 'admin' && role !== 'judge') return res.status(400).json({ error: 'Invalid role' })
+    if (!ROLES.includes(role)) return res.status(400).json({ error: 'Invalid role' })
     if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
     if (await User.exists({ username })) return res.status(409).json({ error: 'Username already exists' })
 
@@ -277,9 +284,14 @@ router.post('/admin/users', async (req, res) => {
   }
 })
 
-async function isLastActiveAdmin(user) {
-  if (user.role !== 'admin' || !user.active) return false
-  return (await User.countDocuments({ role: 'admin', active: true })) <= 1
+/**
+ * Superadmin is the only role that can manage accounts, so losing the last
+ * active one locks everybody out of account management. Admins are not
+ * protected this way — a superadmin can always recreate them.
+ */
+async function isLastSuperadmin(user) {
+  if (user.role !== 'superadmin' || !user.active) return false
+  return (await User.countDocuments({ role: 'superadmin', active: true })) <= 1
 }
 
 router.patch('/admin/users/:id', async (req, res) => {
@@ -292,9 +304,9 @@ router.patch('/admin/users/:id', async (req, res) => {
     if (email != null && cleanEmail(email) && !EMAIL_RE.test(cleanEmail(email))) {
       return res.status(400).json({ error: 'Invalid email address' })
     }
-    const demoting = active === false || (role && role !== 'admin')
-    if (demoting && (await isLastActiveAdmin(user))) {
-      return res.status(400).json({ error: 'Cannot disable or demote the last active admin' })
+    const demoting = active === false || (role && role !== 'superadmin')
+    if (demoting && (await isLastSuperadmin(user))) {
+      return res.status(400).json({ error: 'Cannot disable or demote the last superadmin' })
     }
     if (password != null && password !== '' && String(password).length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' })
@@ -303,7 +315,7 @@ router.patch('/admin/users/:id', async (req, res) => {
     if (typeof name === 'string' && name.trim()) user.name = name.trim()
     if (typeof active === 'boolean') user.active = active
     if (typeof email === 'string') user.email = cleanEmail(email)
-    if (role === 'admin' || role === 'judge') user.role = role
+    if (ROLES.includes(role)) user.role = role
     if (password != null && password !== '') user.passwordHash = await hashPassword(String(password))
     await user.save()
     res.json({ user: publicUser(user) })
@@ -321,7 +333,7 @@ router.delete('/admin/users/:id', async (req, res) => {
     }
     const user = await User.findById(req.params.id)
     if (!user) return res.status(404).json({ error: 'Not found' })
-    if (await isLastActiveAdmin(user)) return res.status(400).json({ error: 'Cannot delete the last active admin' })
+    if (await isLastSuperadmin(user)) return res.status(400).json({ error: 'Cannot delete the last superadmin' })
     // Evaluations are kept (they store the judge's name) so scores aren't lost.
     await user.deleteOne()
     res.json({ ok: true })

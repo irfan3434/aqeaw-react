@@ -10,7 +10,7 @@ const UserSchema = new Schema(
   {
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     name: { type: String, required: true, trim: true },
-    role: { type: String, enum: ['admin', 'judge'], required: true },
+    role: { type: String, enum: ['superadmin', 'admin', 'judge'], required: true },
     passwordHash: { type: String, required: true },
     active: { type: Boolean, default: true },
     // If set, login needs a 6-digit code sent to this address.

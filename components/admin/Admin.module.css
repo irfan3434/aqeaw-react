@@ -891,3 +891,197 @@
     padding: 12px;
   }
 }
+/* ========================================================================== */
+/*  Accounts page (/admin/users) — superadmin only                            */
+/* ========================================================================== */
+
+.adminHeaderActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adminAddBar {
+  margin-bottom: 18px;
+}
+
+/* ---------- Add-account form ---------- */
+.adminUserForm {
+  background: #fff;
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 12px rgba(26, 63, 107, 0.08);
+}
+
+.adminUserForm h2 {
+  margin: 0 0 18px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a3f6b;
+}
+
+.adminUserFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.adminUserFormWide {
+  grid-column: 1 / -1;
+}
+
+.adminUserFormGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adminUserFormGrid label > span {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.adminUserFormGrid input,
+.adminUserFormGrid select {
+  padding: 10px 12px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #f8f9fb;
+  width: 100%;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.adminUserFormGrid input:focus,
+.adminUserFormGrid select:focus {
+  outline: none;
+  border-color: #c4a21e;
+  background: #fff;
+}
+
+.adminUserFormGrid small {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.adminUserForm > button {
+  padding: 11px 22px;
+  background: linear-gradient(135deg, #1a3f6b, #1e4a7e);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.adminUserForm > button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0f2a4a, #1a3f6b);
+}
+
+.adminUserForm > button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* ---------- Table cells ---------- */
+.adminSubtle {
+  font-size: 0.8rem;
+  color: #8b95a5;
+  margin-top: 2px;
+}
+
+.adminYouTag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Role dropdown inside a row */
+.adminTable select {
+  padding: 6px 8px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.adminTable select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.adminRowActions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.adminRowActions button {
+  padding: 6px 10px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a3f6b;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.adminRowActions button:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #c4a21e;
+}
+
+.adminRowActions button:disabled {
+  color: #b6bdc7;
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+/* Higher specificity than the shared .adminRowActions button rules above. */
+.adminRowActions .adminDangerBtn {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.adminRowActions .adminDangerBtn:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.adminRowActions .adminDangerBtn:disabled {
+  color: #e5b4b4;
+  border-color: #f1f5f9;
+  background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .adminUserFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminUserFormWide {
+    grid-column: auto;
+  }
+}

@@ -11,8 +11,12 @@ const ALLOWED_MIMES = new Set([
 ])
 
 const fileFilter = (_req, file, cb) => {
-  if (ALLOWED_MIMES.has(file.mimetype)) cb(null, true)
-  else cb(new Error(`Unsupported file type: ${file.mimetype}`))
+  if (ALLOWED_MIMES.has(file.mimetype)) return cb(null, true)
+  // Tagged so errorHandler.js can answer 400 with this message instead of a
+  // generic 500 — a plain Error would be indistinguishable from a real fault.
+  const err = new Error('Unsupported file type. Please upload a PDF, Word document, JPEG or PNG.')
+  err.code = 'INVALID_FILE_TYPE'
+  cb(err)
 }
 
 export const upload = multer({

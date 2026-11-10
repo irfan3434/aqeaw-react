@@ -24,24 +24,51 @@ first boot.
 
 ## Dashboard accounts
 
-Accounts live in the `dashboard_users` collection, with one of two roles:
+Accounts live in the `dashboard_users` collection, with one of three roles:
 
 | Role | Can reach |
 | --- | --- |
-| `admin` | The full dashboard: applications, exports, users, judging settings |
+| `superadmin` | Everything an admin can, **plus** `/admin/users` — the only role that can create, delete, re-role or reset the password of any account |
+| `admin` | The dashboard: applications, exports, judging settings, evaluations, profile cards. No access to accounts (403 on `/admin/users`) |
 | `judge` | Only `/judge/*` — candidates anonymised behind a code, no names |
 
-**First boot:** if no admin account exists, one is created automatically with
-username `admin` and the password from `ADMIN_PASSWORD`. Sign in and change it.
+Manage accounts in the dashboard at **`/admin/users`**, which only a superadmin
+can open. The link appears in the dashboard header for that role alone.
+
+**On boot** the server makes sure a superadmin exists:
+
+1. One already exists → nothing happens.
+2. No superadmin but exactly one admin → that admin is promoted (this is the
+   migration from the older two-role setup) and the promotion is logged.
+3. No superadmin and several admins → it refuses to guess and tells you to
+   promote one with the CLI.
+4. No accounts at all → creates `admin` as a **superadmin**, using `ADMIN_PASSWORD`.
+
+The last active superadmin cannot be deleted, disabled or demoted, and nobody
+can delete their own account.
 
 Create or reset an account from the command line:
 
 ```bash
-npm run user:create -- <username> <admin|judge> "<Full Name>" <password> [email]
+npm run user:create -- <username> <superadmin|admin|judge> "<Full Name>" <password> [email]
 ```
 
 The password must be at least 8 characters. If the username already exists its
 name, role and password are updated and the account is re-enabled.
+
+List every account, with a warning if no active superadmin exists:
+
+```bash
+npm run user:list
+```
+
+Change only someone's role — password, email and active flag are left alone,
+so promoting a person doesn't reset their password or switch off their
+two-step login:
+
+```bash
+npm run user:role -- <username> <superadmin|admin|judge>
+```
 
 **The optional `email` turns on two-step login.** With one set, signing in sends
 a 6-digit code to that address which must be entered to finish; without one, the
@@ -126,6 +153,9 @@ scripts/create-user.js
   applicant's document to another's record — check its output before trusting
   it. Its input folder `migrate-files/` holds real applicants' documents and is
   gitignored.
-- CORS: outside `NODE_ENV=production`, localhost and private LAN addresses are
-  allowed automatically so the site works from a phone on the same Wi-Fi. In
-  production only `CORS_ORIGINS` is accepted.
+- **CORS fails closed.** Only the origins in `CORS_ORIGINS` are accepted. The
+  convenience that also allows localhost and private LAN addresses — so the
+  site works from a phone on the same Wi-Fi — is off unless you explicitly set
+  `ALLOW_LAN_ORIGINS=true`, and `NODE_ENV=production` disables it regardless.
+  Leave the flag out of any deployed environment. Blocked origins are logged,
+  and the startup banner prints which mode is active.

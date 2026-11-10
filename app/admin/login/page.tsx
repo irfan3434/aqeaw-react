@@ -129,9 +129,12 @@ export default function AdminLoginPage() {
     setError(message)
   }
 
-  /** A judge account can sign in, but the admin dashboard would 403 on every call. */
+  /**
+   * Judges authenticate fine but have no dashboard — every /admin call would
+   * 403. Admins and superadmins both belong here; superadmins just see more.
+   */
   const finish = (session: LoginSession) => {
-    if (session.user.role !== 'admin') {
+    if (session.user.role === 'judge') {
       setError(t.notAdmin)
       return
     }

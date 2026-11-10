@@ -1,7 +1,7 @@
 /**
  * Create or reset a dashboard account from the command line.
  *
- *   npm run user:create -- <username> <role: admin|judge> "<Full Name>" <password> [email]
+ *   npm run user:create -- <username> <role: superadmin|admin|judge> "<Full Name>" <password> [email]
  *
  * With an email, login also needs a 6-digit code sent to that address.
  *
@@ -15,8 +15,8 @@ import { hashPassword } from '../src/services/passwords.js'
 
 const [username, role, name, password, email = ''] = process.argv.slice(2)
 
-if (!username || !['admin', 'judge'].includes(role) || !name || !password || password.length < 8) {
-  console.error('Usage: npm run user:create -- <username> <admin|judge> "<Full Name>" <password (8+ chars)> [email]')
+if (!username || !['superadmin', 'admin', 'judge'].includes(role) || !name || !password || password.length < 8) {
+  console.error('Usage: npm run user:create -- <username> <superadmin|admin|judge> "<Full Name>" <password (8+ chars)> [email]')
   process.exit(1)
 }
 

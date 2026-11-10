@@ -28,7 +28,10 @@ const MAX_WORDS = 400
 const MAX_NOMINATION_WORDS = 100
 const MAX_FILE_SIZE_MB = 4
 const MAX_ACHIEVEMENTS = 4
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+// Trailing slash stripped to match lib/adminApi.ts — a host value ending in
+// "/" would otherwise build "…//submit-application", which Express does not
+// match, 404ing every submission while the admin pages kept working.
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 const SUBMIT_URL = `${API_BASE}/submit-application`
 
 // ---------- Types ----------
@@ -551,13 +554,28 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
     }
 
     try {
-          const res = await fetch(SUBMIT_URL, { method: 'POST', body: fd })
-          if (!res.ok) throw new Error(`Submit failed: ${res.status}`)
-          setSubmitSuccess(true)
-        } catch (err) {
-               console.error(err)
-               alert(t.alert_failure)
-        }
+      const res = await fetch(SUBMIT_URL, { method: 'POST', body: fd })
+      if (res.ok) {
+        setSubmitSuccess(true)
+        return
+      }
+      // The API says what's actually wrong — a file over the size limit, an
+      // unsupported type, a missing field. Showing that beats a generic
+      // "try again", which an applicant can only act on by guessing.
+      let reason = ''
+      try {
+        const data = (await res.json()) as { error?: unknown }
+        if (typeof data.error === 'string') reason = data.error
+      } catch {
+        /* not JSON (a proxy or gateway error) — fall back to the generic text */
+      }
+      console.error('Submit failed:', res.status, reason)
+      alert(reason || `${t.alert_failure} (${res.status})`)
+    } catch (err) {
+      // Network failure, CORS, offline — nothing specific worth showing.
+      console.error(err)
+      alert(t.alert_failure)
+    }
   }
 
   const reactId = useId();
