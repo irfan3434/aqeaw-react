@@ -37,6 +37,15 @@ export function clearToken() {
   window.localStorage.removeItem(USER_KEY)
 }
 
+/**
+ * True when a role may use the admin dashboard. A superadmin can do everything
+ * an admin can, so it counts here too. Use this rather than comparing against
+ * 'admin' directly — that check silently excludes superadmins.
+ */
+export function canUseAdmin(role: Role | undefined) {
+  return role === 'admin' || role === 'superadmin'
+}
+
 /** Where each role lands after login. */
 export function homeFor(role: Role | undefined) {
   return role === 'judge' ? '/judge' : '/admin'
@@ -52,8 +61,7 @@ export function guardRole(role: Role, replace: (href: string) => void): boolean 
     replace('/admin/login')
     return false
   }
-  // A superadmin can do everything an admin can, so it satisfies 'admin' too.
-  const satisfied = user.role === role || (role === 'admin' && user.role === 'superadmin')
+  const satisfied = role === 'admin' ? canUseAdmin(user.role) : user.role === role
   if (!satisfied) {
     replace(homeFor(user.role))
     return false

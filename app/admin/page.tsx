@@ -6,6 +6,7 @@ import { useLanguage } from '../../lib/LanguageContext'
 import {
   adminApi,
   clearToken,
+  canUseAdmin,
   getSessionUser,
   guardRole,
   type ApplicationListItem,
@@ -162,7 +163,9 @@ export default function AdminDashboardPage() {
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const load = useCallback(async () => {
-    if (getSessionUser()?.role !== 'admin') return
+    // Superadmins use this dashboard too; a bare !== 'admin' left them
+    // stuck on "Loading..." because it returned before setLoading(false).
+    if (!canUseAdmin(getSessionUser()?.role)) return
     setLoading(true)
     try {
       const [s, list] = await Promise.all([
