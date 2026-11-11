@@ -21,6 +21,7 @@ const content = {
     colCode: 'Candidate code',
     colSubmitted: 'Submitted',
     colAchievements: 'Achievements',
+    colScore: 'Your score',
     colMyScore: 'Status',
     scored: '✓ Scored',
     colAction: '',
@@ -44,6 +45,7 @@ const content = {
     colCode: 'رمز المرشح',
     colSubmitted: 'تاريخ التقديم',
     colAchievements: 'الإنجازات',
+    colScore: 'درجتك',
     colMyScore: 'الحالة',
     scored: '✓ تم التقييم',
     colAction: '',
@@ -159,6 +161,7 @@ export default function JudgeHomePage() {
                   <th>{t.colCode}</th>
                   <th>{t.colSubmitted}</th>
                   <th>{t.colAchievements}</th>
+                  <th>{t.colScore}</th>
                   <th>{t.colMyScore}</th>
                   <th>{t.colAction}</th>
                 </tr>
@@ -174,6 +177,15 @@ export default function JudgeHomePage() {
                     </td>
                     <td data-label={t.colSubmitted}>{fmtDate(item.submittedOn)}</td>
                     <td data-label={t.colAchievements}>{item.achievementsCount}</td>
+                    <td data-label={t.colScore}>
+                      {item.myEvaluation ? (
+                        <span className={styles.adminScoreValue}>
+                          {item.myEvaluation.total} <small>/ {item.myEvaluation.maxTotal}</small>
+                        </span>
+                      ) : (
+                        <span className={styles.adminScoreNone}>—</span>
+                      )}
+                    </td>
                     <td data-label={t.colMyScore}>
                       {item.myEvaluation ? (
                         <span className={styles.adminStatusOn}>{t.scored}</span>

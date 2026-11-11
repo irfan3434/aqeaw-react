@@ -27,15 +27,26 @@ async function loadByRef(ref) {
   return doc ? { ...parsed, doc } : null
 }
 
-// Judges only see the criteria and their own 1–5 ratings.
-// Weights and calculated scores are for admins only.
-const JUDGE_CRITERIA = CRITERIA.map(({ key, scale, ar, en }) => ({ key, scale, ar, en }))
+/**
+ * Judges get the criteria WITH their weights, matching the published criteria
+ * document, which states the weights and the formula and tells the judge they
+ * fill only the rating column. The weighted score is derived from the rating,
+ * so showing it tells the judge nothing the document doesn't already.
+ *
+ * Still withheld: anything about the candidate's identity, and any other
+ * judge's ratings or totals.
+ */
+const JUDGE_CRITERIA = CRITERIA.map(({ key, max, scale, ar, en }) => ({ key, max, scale, ar, en }))
 
 function serializeEvaluation(ev) {
   if (!ev) return null
   return {
     scores: Object.fromEntries(ev.scores instanceof Map ? ev.scores : Object.entries(ev.scores || {})),
     comment: ev.comment || '',
+    // The judge's own weighted result, so a submitted evaluation shows the same
+    // number the admin sees for it.
+    total: ev.total,
+    maxTotal: ev.maxTotal || MAX_TOTAL,
     updatedAt: ev.updatedAt,
   }
 }
@@ -51,7 +62,10 @@ router.get('/judge/applications', async (req, res) => {
     const [personal, orgs, mine] = await Promise.all([
       PersonalApplication.find({}, { achievements: 1, userType: 1, createdAt: 1 }).lean(),
       OrganizationApplication.find({}, { achievements: 1, createdAt: 1 }).lean(),
-      Evaluation.find({ judgeId: req.user._id }, { applicationId: 1 }).lean(),
+      Evaluation.find(
+        { judgeId: req.user._id },
+        { applicationId: 1, total: 1, maxTotal: 1 }
+      ).lean(),
     ])
     const mineById = new Map(mine.map((e) => [String(e.applicationId), e]))
 
@@ -74,7 +88,9 @@ router.get('/judge/applications', async (req, res) => {
           // each candidate applied; an exact timestamp would tie a code to a
           // person far more tightly.
           submittedOn: d.createdAt ? new Date(d.createdAt).toISOString().slice(0, 10) : null,
-          myEvaluation: ev ? { done: true } : null,
+          // The judge's own score for this candidate, so the list can show it.
+          // Never another judge's score, and never the combined average.
+          myEvaluation: ev ? { done: true, total: ev.total, maxTotal: ev.maxTotal || MAX_TOTAL } : null,
         }
       })
 
@@ -118,6 +134,7 @@ router.get('/judge/applications/:ref', async (req, res) => {
           : a.file?.filename ? { available: false } : null,
       })),
       criteria: JUDGE_CRITERIA,
+      maxTotal: MAX_TOTAL,
       myEvaluation: serializeEvaluation(ev),
     })
   } catch (err) {

@@ -309,7 +309,8 @@ export interface JudgeListItem {
   achievementsCount: number
   /** Submission date as YYYY-MM-DD. Date only — never a time. */
   submittedOn: string | null
-  myEvaluation: { done: true } | null
+  /** This judge's own score for the candidate, once submitted. */
+  myEvaluation: { done: true; total: number; maxTotal: number } | null
 }
 
 export interface JudgeListResponse {
@@ -318,11 +319,18 @@ export interface JudgeListResponse {
 }
 
 /** What a judge sees of a criterion: no weight. */
-export type JudgeCriterion = Omit<Criterion, 'max'>
+/**
+ * Judges now receive the weight too, matching the published criteria document
+ * which prints all six weights and the formula.
+ */
+export type JudgeCriterion = Criterion
 
 export interface MyEvaluation {
   scores: Record<string, number>
   comment: string
+  /** This judge's own weighted result — never the combined average. */
+  total: number
+  maxTotal: number
   updatedAt: string
 }
 
@@ -337,6 +345,8 @@ export interface JudgeDetailResponse {
     file: { available: boolean; ext?: string; size?: number | null } | null
   }[]
   criteria: JudgeCriterion[]
+  /** Highest possible weighted total, i.e. 100. */
+  maxTotal: number
   myEvaluation: MyEvaluation | null
 }
 

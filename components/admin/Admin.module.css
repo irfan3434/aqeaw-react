@@ -1667,3 +1667,79 @@
   font-weight: 700;
   color: #8b95a5;
 }
+
+/* ---------- Weighted score, judge pages ---------- */
+/* Per-criterion points: column (ه) of the published criteria document. */
+.adminCriterionPoints {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #9a7f17;
+}
+
+.adminWeightedBand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 18px 24px;
+  border-radius: 12px;
+  background: #1a3f6b;
+  color: #fff;
+}
+
+.adminWeightedLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.adminWeightedLabel strong {
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.adminWeightedLabel small {
+  font-size: 0.8rem;
+  color: #bcd0e8;
+}
+
+.adminWeightedValue {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adminWeightedValue strong {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffd84d;
+}
+
+.adminWeightedValue small {
+  font-size: 1rem;
+  color: #bcd0e8;
+}
+
+.adminWeightedPartial {
+  font-size: 0.82rem;
+  color: #1a3f6b;
+  background: #ffd84d;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.adminScoreValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #1a3f6b;
+}
+
+.adminScoreValue small {
+  font-weight: 600;
+  color: #8b95a5;
+}

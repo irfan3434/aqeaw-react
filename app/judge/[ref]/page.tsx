@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useLanguage } from '../../../lib/LanguageContext'
-import { guardRole, judgeApi, type JudgeDetailResponse } from '../../../lib/adminApi'
+import { guardRole, judgeApi, weightedScore, type JudgeDetailResponse } from '../../../lib/adminApi'
 import styles from '../../../components/admin/Admin.module.css'
 
 const content = {
@@ -31,6 +31,9 @@ const content = {
     locked: 'You have already evaluated this candidate. The evaluation cannot be changed.',
     lastSaved: 'Submitted on',
     incomplete: 'Please score every criterion.',
+    weighted: 'Weighted score',
+    weightedPartial: 'partial — some criteria not yet rated',
+    weightedHow: 'Each rating becomes (weight x rating) / 5. The total is out of 100.',
     loading: 'Loading…',
     notFound: 'Candidate not found',
     downloadFailed: 'Download failed',
@@ -59,6 +62,9 @@ const content = {
     locked: 'لقد قيّمت هذا المرشح مسبقاً، ولا يمكن تعديل التقييم.',
     lastSaved: 'تاريخ الرفع',
     incomplete: 'يرجى تقييم جميع المعايير.',
+    weighted: 'الدرجة الموزونة',
+    weightedPartial: 'غير مكتملة — بقيت معايير بلا تقدير',
+    weightedHow: 'كل تقدير يتحوّل إلى (الوزن × التقدير) ÷ 5، والمجموع من 100.',
     loading: 'جارٍ التحميل…',
     notFound: 'المرشح غير موجود',
     downloadFailed: 'فشل التحميل',
@@ -94,6 +100,18 @@ export default function JudgeEvaluatePage() {
       .catch((e) => setError(e instanceof Error ? e.message : t.notFound))
       .finally(() => setLoading(false))
   }, [params.ref, router, t.notFound])
+
+  // Live weighted total while the judge is still rating. Uses the same
+  // (weight x rating) / 5 formula the server applies on submit, so the number
+  // shown here is the number that gets stored.
+  const liveTotal = useMemo(() => {
+    if (!data) return 0
+    const sum = data.criteria.reduce((acc, c) => {
+      const r = Number(scores[c.key])
+      return acc + (Number.isInteger(r) && r > 0 ? weightedScore(c, r) : 0)
+    }, 0)
+    return Math.round(sum * 100) / 100
+  }, [data, scores])
 
   const complete = data?.criteria.every((c) => /^[1-9]$/.test(scores[c.key] ?? '') && Number(scores[c.key]) <= (c.scale || 5)) ?? false
 
@@ -216,6 +234,9 @@ export default function JudgeEvaluatePage() {
                 <div className={styles.adminCriterionText}>
                   <label id={`c-${c.key}`}>{c[lang].label}</label>
                   <small>{c[lang].hint}</small>
+                  <small className={styles.adminCriterionPoints}>
+                    {scores[c.key] ? weightedScore(c, Number(scores[c.key])) : '—'} / {c.max}
+                  </small>
                 </div>
                 <div className={styles.adminCriterionInput}>
                   {/* Slider */}
@@ -275,6 +296,20 @@ export default function JudgeEvaluatePage() {
             />
           </div>
           </fieldset>
+
+          <div className={styles.adminWeightedBand}>
+            <div className={styles.adminWeightedLabel}>
+              <strong>{t.weighted}</strong>
+              <small>{t.weightedHow}</small>
+            </div>
+            <div className={styles.adminWeightedValue}>
+              <strong>{locked && data.myEvaluation ? data.myEvaluation.total : liveTotal}</strong>
+              <small>/ {locked && data.myEvaluation ? data.myEvaluation.maxTotal : data.maxTotal}</small>
+            </div>
+            {!locked && !complete && (
+              <span className={styles.adminWeightedPartial}>{t.weightedPartial}</span>
+            )}
+          </div>
 
           <div className={styles.adminSubmitRow}>
             {!locked && (
