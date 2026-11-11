@@ -22,17 +22,15 @@ import React, {
 } from 'react'
 import { useLanguage } from '../../lib/LanguageContext'
 import styles from './HowToApply.module.css'
+// apiBase() strips a trailing slash and, when the configured URL is
+// localhost but the page was opened from another host, retargets it there.
+import { apiBase } from '../../lib/apiBase'
 
 // ---------- Constants ----------
 const MAX_WORDS = 400
 const MAX_NOMINATION_WORDS = 100
 const MAX_FILE_SIZE_MB = 4
 const MAX_ACHIEVEMENTS = 4
-// Trailing slash stripped to match lib/adminApi.ts — a host value ending in
-// "/" would otherwise build "…//submit-application", which Express does not
-// match, 404ing every submission while the admin pages kept working.
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '')
-const SUBMIT_URL = `${API_BASE}/submit-application`
 
 // ---------- Types ----------
 type FormType = 'personal' | 'organization'
@@ -559,7 +557,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
     }
 
     try {
-      const res = await fetch(SUBMIT_URL, { method: 'POST', body: fd })
+      const res = await fetch(`${apiBase()}/submit-application`, { method: 'POST', body: fd })
       if (res.ok) {
         setSubmitSuccess(true)
         return

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import NextImage from 'next/image'
 import { useLanguage } from '../../lib/LanguageContext'
+import { fetchPublishedProfileCards, profileCardPhotoSrc, type ProfileCardItem } from '../../lib/adminApi'
+import ProfileCard from '../ProfileCard/ProfileCard'
 import styles from './Winners.module.css'
 
 const winnersData = {
@@ -41,19 +43,49 @@ export default function Winners() {
   const data = winnersData[lang]
   const [selectedWinner, setSelectedWinner] = useState<Winner | null>(null)
   const [modalClosing, setModalClosing] = useState(false)
+  // Profile cards published from the admin dashboard (/admin/profile-cards)
+  const [profileCards, setProfileCards] = useState<ProfileCardItem[]>([])
+  const [selectedCard, setSelectedCard] = useState<ProfileCardItem | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    fetchPublishedProfileCards()
+      .then((cards) => alive && setProfileCards(cards))
+      .catch(() => {
+        /* API unreachable: show only the static winners */
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // Lock page scrolling while a modal is open
+  const modalOpen = Boolean(selectedWinner || selectedCard)
+  useEffect(() => {
+    if (!modalOpen) return
+    const body = document.body
+    body.style.overflow = 'hidden'
+    return () => {
+      body.style.overflow = ''
+    }
+  }, [modalOpen])
 
   const openModal = (winner: Winner) => {
     setSelectedWinner(winner)
     setModalClosing(false)
-    document.body.style.overflow = 'hidden'
+  }
+
+  const openCard = (card: ProfileCardItem) => {
+    setSelectedCard(card)
+    setModalClosing(false)
   }
 
   const closeModal = () => {
     setModalClosing(true)
     setTimeout(() => {
       setSelectedWinner(null)
+      setSelectedCard(null)
       setModalClosing(false)
-      document.body.style.overflow = ''
     }, 250)
   }
 
@@ -61,12 +93,23 @@ export default function Winners() {
     if (e.target === e.currentTarget) closeModal()
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent, winner: Winner) => {
+  const handleKeyDown = (e: React.KeyboardEvent, open: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      openModal(winner)
+      open()
     }
   }
+
+  const expandIcon = (
+    <div className={styles.winnersCardExpandIcon} aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="15 3 21 3 21 9"/>
+        <polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/>
+        <line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </div>
+  )
 
   return (
     <>
@@ -94,7 +137,7 @@ export default function Winners() {
                 key={winner.id}
                 className={styles.winnersCard}
                 onClick={() => openModal(winner)}
-                onKeyDown={(e) => handleKeyDown(e, winner)}
+                onKeyDown={(e) => handleKeyDown(e, () => openModal(winner))}
                 tabIndex={0}
                 role="button"
                 aria-label={`View full image of ${winner.name}`}>
@@ -109,14 +152,7 @@ export default function Winners() {
                     loading="lazy"
                   />
                   {/* Expand icon on hover */}
-                  <div className={styles.winnersCardExpandIcon} aria-hidden="true">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="15 3 21 3 21 9"/>
-                      <polyline points="9 21 3 21 3 15"/>
-                      <line x1="21" y1="3" x2="14" y2="10"/>
-                      <line x1="3" y1="21" x2="10" y2="14"/>
-                    </svg>
-                  </div>
+                  {expandIcon}
                 </div>
 
                 <div className={styles.winnersCardContent}>
@@ -125,12 +161,64 @@ export default function Winners() {
 
               </article>
             ))}
+
+            {/* Profile cards added by admins, styled like the winner images */}
+            {profileCards.map((card) => {
+              const name = card.rname || card.foot
+              return (
+                <article
+                  key={card._id}
+                  className={styles.winnersCard}
+                  onClick={() => openCard(card)}
+                  onKeyDown={(e) => handleKeyDown(e, () => openCard(card))}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View full card of ${name}`}>
+
+                  <div className={styles.winnersCardImage}>
+                    <div className={styles.winnersCardProfile}>
+                      <ProfileCard card={card} photoSrc={profileCardPhotoSrc(card.photoUrl)} />
+                    </div>
+                    {expandIcon}
+                  </div>
+
+                  <div className={styles.winnersCardContent}>
+                    <h3 className={styles.winnersCardName}>{name}</h3>
+                  </div>
+
+                </article>
+              )
+            })}
           </div>
 
         </div>
       </section>
 
-      {/* Modal */}
+      {/* Modal: full profile card */}
+      {selectedCard && (
+        <div
+          className={`${styles.winnersModalBackdrop} ${modalClosing ? styles.winnersModalBackdropClosing : ''}`}
+          onClick={handleBackdropClick}
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedCard.rname || selectedCard.foot}>
+
+          <div className={`${styles.winnersModal} ${styles.winnersModalCard} ${modalClosing ? styles.winnersModalClosing : ''}`}>
+            <button
+              className={styles.winnersModalCloseBtn}
+              onClick={closeModal}
+              aria-label="Close modal">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <ProfileCard card={selectedCard} photoSrc={profileCardPhotoSrc(selectedCard.photoUrl)} />
+          </div>
+        </div>
+      )}
+
+      {/* Modal: winner image */}
       {selectedWinner && (
         <div
           className={`${styles.winnersModalBackdrop} ${modalClosing ? styles.winnersModalBackdropClosing : ''}`}

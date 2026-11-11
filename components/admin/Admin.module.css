@@ -891,15 +891,584 @@
     padding: 12px;
   }
 }
-/* ========================================================================== */
-/*  Accounts page (/admin/users) — superadmin only                            */
-/* ========================================================================== */
+
+
+/* ====================================================================== */
+/*  Judging, scores & accounts                                            */
+/* ====================================================================== */
 
 .adminHeaderActions {
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
+
+.adminUserName {
+  color: #8b95a5;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.adminPanel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.adminPanelTitle {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a3f6b;
+}
+
+.adminPanelHint {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.adminInlineRow {
+  display: flex;
+  gap: 6px;
+}
+
+.adminInlineRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+.adminSmallBtn {
+  display: inline-block;
+  background: #f3f4f8;
+  border: 1px solid #e2e6ed;
+  color: #1a3f6b;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.adminSmallBtn:hover {
+  background: #e8ebf2;
+  border-color: #c4a21e;
+}
+
+.adminDangerBtn {
+  color: #b91c1c;
+}
+
+.adminDangerBtn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.adminTableStatic tbody tr {
+  cursor: default;
+}
+
+.adminStatusOn,
+.adminStatusOff {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.adminStatusOn {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.adminStatusOff {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.adminSuccessMsg {
+  color: #047857;
+  font-size: 0.88rem;
+  margin-top: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #ecfdf5;
+  border-radius: 6px;
+  border-inline-start: 3px solid #10b981;
+}
+
+/* Scores */
+.adminScoreCell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adminScoreBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fdf8e4, #f8efc8);
+  color: #7a6210;
+  border: 1px solid #ecd98a;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 3px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.adminScoreBadge small {
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.adminJudgeScores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+}
+
+.adminJudgeScores li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+
+.adminJudgeScores strong {
+  color: #7a6210;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Result (winner / not a winner / pending) */
+.adminResultBadge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.adminResultBadge small {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.adminResult_winner {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.adminResult_notWinner {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.adminResult_pending {
+  background: #f3f4f6;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.adminResultsHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.adminResultChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adminResultChips .adminResultBadge {
+  cursor: pointer;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+.adminResultChipActive {
+  box-shadow: 0 0 0 2px #1a3f6b;
+}
+
+.adminSettingsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+}
+
+@media (max-width: 900px) {
+  .adminSettingsRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.adminScoreCell .adminScoreBadge {
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 0.8rem;
+}
+
+.adminScoreCount {
+  color: #8b95a5;
+  font-size: 0.75rem;
+}
+
+.adminScoreNone {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.adminCode {
+  font-family: Consolas, 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: #1a3f6b;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  direction: ltr;
+  display: inline-block;
+}
+
+.adminPrivacyNote {
+  margin-top: 8px;
+  color: #6b7280;
+}
+
+.adminEvalTableWrap {
+  overflow-x: auto;
+  border: 1px solid #eceef3;
+  border-radius: 12px;
+}
+
+.adminEvalTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.adminEvalTable th,
+.adminEvalTable td {
+  padding: 10px 12px;
+  text-align: start;
+  border-bottom: 1px solid #f0f2f5;
+  vertical-align: top;
+}
+
+.adminEvalTable th {
+  background: #f8f9fb;
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adminEvalTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.adminEvalComment {
+  margin-top: 6px;
+  color: #4b5563;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  max-width: 280px;
+}
+
+/* Judge progress + tabs */
+.adminProgressLabel {
+  font-size: 0.88rem;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+
+.adminProgressBar {
+  height: 8px;
+  background: #eceef3;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.adminProgressBar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #c4a21e, #e8c84a);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.adminTabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.adminTab {
+  background: #f3f4f8;
+  border: 1px solid transparent;
+  color: #4b5563;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adminTabActive {
+  background: #1a3f6b;
+  color: #fff;
+}
+
+/* Scoring form */
+.adminCriteria {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adminCriterion {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  align-items: center;
+  background: #f8f9fb;
+  border: 1px solid #eceef3;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.adminCriterionText label {
+  display: block;
+  font-weight: 700;
+  color: #1a3f6b;
+  font-size: 0.95rem;
+}
+
+.adminCriterionText small {
+  color: #6b7280;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.adminCriterionInput {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminCriterionInput input[type='range'] {
+  flex: 1;
+  accent-color: #c4a21e;
+  min-width: 0;
+}
+
+.adminCriterionInput input[type='number'] {
+  width: 64px;
+  padding: 7px 8px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1a3f6b;
+}
+
+.adminCriterionInput span {
+  color: #8b95a5;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.adminTotalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #1a3f6b;
+  color: #fff;
+  font-weight: 700;
+}
+
+.adminTotalRow .adminScoreBadge {
+  font-size: 1.1rem;
+}
+
+.adminTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  resize: vertical;
+}
+
+.adminTextarea:focus,
+.adminCriterionInput input[type='number']:focus {
+  outline: none;
+  border-color: #c4a21e;
+  box-shadow: 0 0 0 3px rgba(196, 162, 30, 0.12);
+}
+
+.adminSubmitRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .adminUserForm {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adminCriterion {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .adminUserForm {
+    grid-template-columns: 1fr;
+  }
+
+  .adminPanel {
+    padding: 16px;
+  }
+}
+/* ---------- Login verification code ---------- */
+.adminLoginForm input.adminCodeInput {
+  text-align: center;
+  font-size: 28px;
+  letter-spacing: 12px;
+  font-weight: 700;
+}
+
+.adminCodeActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adminLoginForm button.adminLinkBtn {
+  background: none;
+  border: none;
+  color: #1e3a5f;
+  padding: 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  box-shadow: none;
+  width: auto;
+  cursor: pointer;
+}
+
+.adminLoginForm button.adminLinkBtn:disabled {
+  color: #9ca3af;
+  text-decoration: none;
+  cursor: default;
+}
+
+/* ---------- 1–5 rating (weighted criteria) ---------- */
+.adminWeightTag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fdf6dc;
+  color: #8a6d0b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.adminRating {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.adminRating button {
+  flex: 1;
+  min-width: 36px;
+  height: 38px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a3f6b;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.adminRating button:hover {
+  border-color: #c4a21e;
+}
+
+.adminRating button.adminRatingOn {
+  background: #1a3f6b;
+  border-color: #1a3f6b;
+  color: #fff;
+}
+
+.adminCriterionInput span.adminWeighted {
+  min-width: 64px;
+  text-align: center;
+  color: #1a3f6b;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ---------- Rating: slider + number + name ---------- */
+.adminCriterionInput {
+  flex-wrap: wrap;
+}
+
+.adminCriterionInput input[type='range'] {
+  min-width: 140px;
+}
+
+.adminCriterionInput input[type='range'].adminRangeUnset {
+  opacity: 0.35;
+}
+
+.adminRatingSelect {
+  padding: 7px 8px;
+  border: 1.5px solid #e2e6ed;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a3f6b;
+  background: #fff;
+  min-width: 120px;
 
 .adminAddBar {
   margin-bottom: 18px;

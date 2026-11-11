@@ -1,80 +1,63 @@
 'use client'
 
-import { useState, useEffect, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '../../../lib/LanguageContext'
-import {
-  adminApi,
-  setToken,
-  setUser,
-  isCodeRequired,
-  ApiError,
-  type LoginSession,
-} from '../../../lib/adminApi'
+import { adminApi, AuthError, getSessionUser, getToken, homeFor, setSession, type SessionUser } from '../../../lib/adminApi'
 import styles from '../../../components/admin/Admin.module.css'
 
-/** Matches RESEND_WAIT_MS in the server's routes/auth.js */
-const RESEND_WAIT = 30
+const RESEND_SECONDS = 30
 
 const content = {
   en: {
-    title: 'Admin Dashboard',
-    subtitle: 'Sign in with your dashboard account to continue.',
+    title: 'Dashboard Sign in',
+    subtitle: 'For administrators and judges. Enter your username and password.',
     username: 'Username',
-    password: 'Password',
+    placeholder: 'Password',
     button: 'Sign in',
     loading: 'Signing in…',
-
-    codeTitle: 'Check your email',
-    codeSubtitle: (email: string) => `We sent a 6-digit code to ${email}. It expires in 10 minutes.`,
-    code: '6-digit code',
-    verify: 'Verify',
-    verifying: 'Verifying…',
-    resend: 'Send a new code',
-    resendIn: (s: number) => `Send a new code in ${s}s`,
-    resent: 'A new code is on its way.',
-    codeSent: 'Code sent.',
-    back: 'Use a different account',
-
-    invalidCredentials: 'Wrong username or password',
-    tooManyAttempts: 'Too many attempts. Please try again later.',
-    waitSeconds: (s: number) => `Please wait ${s}s before asking for another code.`,
-    codeSendFailed: 'We could not send the code. Please try again.',
-    codeExpired: 'That code expired. Please sign in again.',
-    codeLocked: 'Too many wrong codes. Please sign in again.',
-    codeWrong: (left: number) =>
-      left > 0 ? `Wrong code — ${left} attempt${left === 1 ? '' : 's'} left` : 'Wrong code',
-    notAdmin: 'This account does not have admin access.',
+    invalidCredentials: 'Incorrect username or password',
+    tooMany: 'Too many attempts. Try again in 15 minutes.',
     loginFailed: 'Login failed',
+    sendFailed: 'Could not send the verification code. Contact the administrator.',
+    codeTitle: 'Verification code',
+    codeSent: 'We sent a 6-digit code to',
+    enterBelow: 'Enter it below.',
+    codeValid: 'The code is valid for 10 minutes. The email can take up to a minute — also check your Spam folder.',
+    verify: 'Verify and sign in',
+    verifying: 'Checking…',
+    wrongCode: (n: number) => `Wrong code. ${n} attempt(s) left.`,
+    expired: 'The code has expired. Request a new one.',
+    locked: 'Too many wrong codes. Request a new one.',
+    resend: 'Resend code',
+    resendIn: (s: number) => `Resend code in ${s}s`,
+    resent: 'A new code was sent.',
+    back: 'Back',
   },
   ar: {
-    title: 'لوحة الإدارة',
-    subtitle: 'سجّل الدخول بحساب لوحة التحكم للمتابعة.',
+    title: 'تسجيل الدخول للوحة',
+    subtitle: 'للمسؤولين والمحكّمين. أدخل اسم المستخدم وكلمة المرور.',
     username: 'اسم المستخدم',
-    password: 'كلمة المرور',
+    placeholder: 'كلمة المرور',
     button: 'تسجيل الدخول',
     loading: 'جارٍ تسجيل الدخول…',
-
-    codeTitle: 'تحقق من بريدك الإلكتروني',
-    codeSubtitle: (email: string) => `أرسلنا رمزًا من 6 أرقام إلى ${email}. ينتهي خلال 10 دقائق.`,
-    code: 'الرمز المكوّن من 6 أرقام',
-    verify: 'تحقق',
-    verifying: 'جارٍ التحقق…',
-    resend: 'إرسال رمز جديد',
-    resendIn: (s: number) => `إرسال رمز جديد بعد ${s} ثانية`,
-    resent: 'تم إرسال رمز جديد.',
-    codeSent: 'تم إرسال الرمز.',
-    back: 'استخدام حساب آخر',
-
     invalidCredentials: 'اسم المستخدم أو كلمة المرور غير صحيحة',
-    tooManyAttempts: 'عدد محاولات كبير. يُرجى المحاولة لاحقًا.',
-    waitSeconds: (s: number) => `يُرجى الانتظار ${s} ثانية قبل طلب رمز جديد.`,
-    codeSendFailed: 'لم نتمكّن من إرسال الرمز. يُرجى المحاولة مرة أخرى.',
-    codeExpired: 'انتهت صلاحية الرمز. يُرجى تسجيل الدخول من جديد.',
-    codeLocked: 'عدد محاولات خاطئة كبير. يُرجى تسجيل الدخول من جديد.',
-    codeWrong: (left: number) => (left > 0 ? `رمز غير صحيح — بقي ${left} محاولة` : 'رمز غير صحيح'),
-    notAdmin: 'هذا الحساب لا يملك صلاحية الإدارة.',
+    tooMany: 'محاولات كثيرة. حاول مرة أخرى بعد 15 دقيقة.',
     loginFailed: 'فشل تسجيل الدخول',
+    sendFailed: 'تعذّر إرسال رمز التحقق. تواصل مع المسؤول.',
+    codeTitle: 'رمز التحقق',
+    codeSent: 'أرسلنا رمزاً من 6 أرقام إلى',
+    enterBelow: 'أدخله بالأسفل.',
+    codeValid: 'الرمز صالح لمدة 10 دقائق. قد يتأخر وصول الرسالة حتى دقيقة، وتأكد من مجلد الرسائل غير المرغوب فيها (Spam).',
+    verify: 'تحقق وادخل',
+    verifying: 'جارٍ التحقق…',
+    wrongCode: (n: number) => `الرمز غير صحيح. تبقّى ${n} محاولات.`,
+    expired: 'انتهت صلاحية الرمز. اطلب رمزاً جديداً.',
+    locked: 'أخطأت عدة مرات. اطلب رمزاً جديداً.',
+    resend: 'إعادة إرسال الرمز',
+    resendIn: (s: number) => `إعادة الإرسال بعد ${s} ثانية`,
+    resent: 'تم إرسال رمز جديد.',
+    back: 'رجوع',
   },
 }
 
@@ -82,85 +65,63 @@ export default function AdminLoginPage() {
   const { lang } = useLanguage()
   const t = content[lang]
   const router = useRouter()
-
-  const [step, setStep] = useState<'credentials' | 'code'>('credentials')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [code, setCode] = useState('')
-  const [challenge, setChallenge] = useState('')
-  const [maskedEmail, setMaskedEmail] = useState('')
-  const [cooldown, setCooldown] = useState(0)
-  const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Counts the resend cooldown down to zero, one second at a time.
+  // Step 2 state
+  const [challenge, setChallenge] = useState('')
+  const [maskedEmail, setMaskedEmail] = useState('')
+  const [code, setCode] = useState('')
+  const [cooldown, setCooldown] = useState(0)
+
+  // Already signed in → go straight to the right page.
+  useEffect(() => {
+    const user = getSessionUser()
+    if (getToken() && user) router.replace(homeFor(user.role))
+  }, [router])
+
   useEffect(() => {
     if (cooldown <= 0) return
-    const id = setTimeout(() => setCooldown((s) => s - 1), 1000)
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000)
     return () => clearTimeout(id)
   }, [cooldown])
 
-  /** Turns an API failure into a message the user can act on. */
-  const describe = (err: unknown): string => {
-    if (err instanceof ApiError) {
-      if (err.status === 429) {
-        return err.retryAfter ? t.waitSeconds(err.retryAfter) : t.tooManyAttempts
-      }
-      if (err.status === 502) return t.codeSendFailed
-      if (err.status === 401) {
-        if (err.reason === 'expired') return t.codeExpired
-        if (err.reason === 'locked') return t.codeLocked
-        if (err.reason === 'wrong') return t.codeWrong(err.attemptsLeft ?? 0)
-        return t.invalidCredentials
-      }
-      return err.message || t.loginFailed
-    }
-    return err instanceof Error ? err.message : t.loginFailed
+  const finish = (token: string, user: SessionUser) => {
+    setSession(token, user)
+    router.push(homeFor(user.role))
   }
 
-  const restart = (message: string) => {
-    setStep('credentials')
-    setCode('')
-    setChallenge('')
-    setPassword('')
-    setCooldown(0)
-    setNotice('')
-    setError(message)
+  const messageFor = (err: unknown) => {
+    if (!(err instanceof AuthError)) return t.loginFailed
+    if (err.status === 429) return t.tooMany
+    if (err.status === 502) return t.sendFailed
+    if (err.data.reason === 'wrong') return t.wrongCode(err.data.attemptsLeft ?? 0)
+    if (err.data.reason === 'expired') return t.expired
+    if (err.data.reason === 'locked') return t.locked
+    if (err.status === 401) return t.invalidCredentials
+    return err.message || t.loginFailed
   }
 
-  /**
-   * Judges authenticate fine but have no dashboard — every /admin call would
-   * 403. Admins and superadmins both belong here; superadmins just see more.
-   */
-  const finish = (session: LoginSession) => {
-    if (session.user.role === 'judge') {
-      setError(t.notAdmin)
-      return
-    }
-    setToken(session.token)
-    setUser(session.user)
-    router.push('/admin')
-  }
-
-  const onCredentials = async (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
-    setNotice('')
     setLoading(true)
     try {
-      const res = await adminApi.login(username.trim(), password)
-      if (isCodeRequired(res)) {
+      const res = await adminApi.login(username.trim(), password.trim())
+      if ('challenge' in res) {
         setChallenge(res.challenge)
         setMaskedEmail(res.email)
-        setStep('code')
-        setCooldown(RESEND_WAIT)
-        setNotice(t.codeSent)
+        setCode('')
+        setInfo('')
+        setCooldown(RESEND_SECONDS)
       } else {
-        finish(res)
+        finish(res.token, res.user)
       }
     } catch (err) {
-      setError(describe(err))
+      setError(messageFor(err))
     } finally {
       setLoading(false)
     }
@@ -169,19 +130,14 @@ export default function AdminLoginPage() {
   const onVerify = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
-    setNotice('')
+    setInfo('')
     setLoading(true)
     try {
-      finish(await adminApi.verifyLoginCode(challenge, code))
+      const { token, user } = await adminApi.verifyCode(challenge, code)
+      finish(token, user)
     } catch (err) {
-      const message = describe(err)
-      // An expired or locked attempt can't be retried — go back to step 1.
-      if (err instanceof ApiError && (err.reason === 'expired' || err.reason === 'locked')) {
-        restart(message)
-      } else {
-        setError(message)
-        setCode('')
-      }
+      setError(messageFor(err))
+      setCode('')
     } finally {
       setLoading(false)
     }
@@ -189,87 +145,101 @@ export default function AdminLoginPage() {
 
   const onResend = async () => {
     setError('')
-    setNotice('')
-    setLoading(true)
+    setInfo('')
     try {
-      await adminApi.resendLoginCode(challenge)
-      setCooldown(RESEND_WAIT)
-      setNotice(t.resent)
+      await adminApi.resendCode(challenge)
+      setInfo(t.resent)
+      setCooldown(RESEND_SECONDS)
     } catch (err) {
-      setError(describe(err))
-      if (err instanceof ApiError) {
-        if (err.retryAfter) setCooldown(err.retryAfter)
-        if (err.reason === 'expired') restart(t.codeExpired)
-      }
-    } finally {
-      setLoading(false)
+      if (err instanceof AuthError && err.data.retryAfter) setCooldown(err.data.retryAfter)
+      else setError(messageFor(err))
     }
   }
 
-  return (
-    <div className={styles.adminLoginPage}>
-      <div className={styles.adminLoginCard}>
-        <h1>{t.title}</h1>
-        <p>{step === 'credentials' ? t.subtitle : t.codeSubtitle(maskedEmail)}</p>
+  const backToPassword = () => {
+    setChallenge('')
+    setCode('')
+    setError('')
+    setInfo('')
+  }
 
-        {step === 'credentials' ? (
-          <form className={styles.adminLoginForm} onSubmit={onCredentials}>
-            <input
-              type="text"
-              placeholder={t.username}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              autoCapitalize="none"
-              spellCheck={false}
-              autoFocus
-              required
-            />
-            <input
-              type="password"
-              placeholder={t.password}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-            <button type="submit" disabled={loading || !username.trim() || !password}>
-              {loading ? t.loading : t.button}
-            </button>
-            {error && <div className={styles.adminErrorMsg}>{error}</div>}
-          </form>
-        ) : (
+  if (challenge) {
+    return (
+      <div className={styles.adminLoginPage}>
+        <div className={styles.adminLoginCard}>
+          <h1>🔐 {t.codeTitle}</h1>
+          <p>
+            {t.codeSent} <bdi dir="ltr">{maskedEmail}</bdi>
+            <br />
+            {t.enterBelow}
+            <br />
+            <small>{t.codeValid}</small>
+          </p>
           <form className={styles.adminLoginForm} onSubmit={onVerify}>
             <input
               className={styles.adminCodeInput}
               type="text"
-              dir="ltr"
-              placeholder={t.code}
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               inputMode="numeric"
               autoComplete="one-time-code"
+              pattern="[0-9]{6}"
               maxLength={6}
+              placeholder="••••••"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              dir="ltr"
               autoFocus
               required
             />
             <button type="submit" disabled={loading || code.length !== 6}>
               {loading ? t.verifying : t.verify}
             </button>
-
             {error && <div className={styles.adminErrorMsg}>{error}</div>}
-            {!error && notice && <div className={styles.adminNoticeMsg}>{notice}</div>}
-
-            <div className={styles.adminLoginAlt}>
-              <button type="button" onClick={onResend} disabled={loading || cooldown > 0}>
+            {info && <div className={styles.adminSuccessMsg}>{info}</div>}
+            <div className={styles.adminCodeActions}>
+              <button type="button" className={styles.adminLinkBtn} onClick={onResend} disabled={cooldown > 0}>
                 {cooldown > 0 ? t.resendIn(cooldown) : t.resend}
               </button>
-              <button type="button" onClick={() => restart('')} disabled={loading}>
+              <button type="button" className={styles.adminLinkBtn} onClick={backToPassword}>
                 {t.back}
               </button>
             </div>
           </form>
-        )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.adminLoginPage}>
+      <div className={styles.adminLoginCard}>
+        <h1>{t.title}</h1>
+        <p>{t.subtitle}</p>
+        <form className={styles.adminLoginForm} onSubmit={onSubmit}>
+          <input
+            type="text"
+            placeholder={t.username}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+            autoCapitalize="none"
+            dir="ltr"
+            autoFocus
+            required
+          />
+          <input
+            type="password"
+            placeholder={t.placeholder}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            dir="ltr"
+            required
+          />
+          <button type="submit" disabled={loading || !password || !username}>
+            {loading ? t.loading : t.button}
+          </button>
+          {error && <div className={styles.adminErrorMsg}>{error}</div>}
+        </form>
       </div>
     </div>
   )

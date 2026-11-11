@@ -6,8 +6,7 @@ import { useLanguage } from '../../../lib/LanguageContext'
 import {
   adminApi,
   clearToken,
-  getToken,
-  ApiError,
+  guardRole,
   type ManagedUser,
   type Role,
 } from '../../../lib/adminApi'
@@ -139,7 +138,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<ManagedUser[]>([])
   const [me, setMe] = useState<ManagedUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [forbidden, setForbidden] = useState(false)
   const [error, setError] = useState('')
   /** id of the row currently being changed, so only its buttons disable */
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -153,26 +151,22 @@ export default function AdminUsersPage() {
 
   const load = useCallback(async () => {
     try {
-      const [{ user }, { users: list }] = await Promise.all([adminApi.me(), adminApi.listUsers()])
+      const [{ user }, { users: list }] = await Promise.all([adminApi.me(), adminApi.users()])
       setMe(user)
       setUsers(list)
-      setForbidden(false)
     } catch (err) {
-      // 403 = signed in, but an admin rather than a superadmin.
-      if (err instanceof ApiError && err.status === 403) setForbidden(true)
-      else if (!(err instanceof Error && err.message === 'Unauthorized')) {
-        setError(err instanceof Error ? err.message : String(err))
-      }
+      // request() already redirects on 401 and 403, so anything reaching here
+      // is a genuine failure rather than a permissions problem.
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg !== 'Unauthorized' && msg !== 'Forbidden') setError(msg)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    if (!getToken()) {
-      router.replace('/admin/login')
-      return
-    }
+    // Accounts are superadmin-only; anyone else is sent to their own home page.
+    if (!guardRole('superadmin', router.replace)) return
     load()
   }, [router, load])
 
@@ -260,21 +254,6 @@ export default function AdminUsersPage() {
     )
   }
 
-  if (forbidden) {
-    return (
-      <div className={styles.adminPage}>
-        <div className={styles.adminContainer}>
-          <div className={styles.adminHeader}>
-            <h1>{t.title}</h1>
-            <button className={styles.adminLogoutBtn} onClick={() => router.push('/admin')}>
-              {t.back}
-            </button>
-          </div>
-          <div className={styles.adminEmpty}>{t.forbidden}</div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className={styles.adminPage}>

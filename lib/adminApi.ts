@@ -1,33 +1,35 @@
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').replace(/\/$/, '')
+import { apiBase } from './apiBase'
 
 const TOKEN_KEY = 'aqeaw_admin_token'
 const USER_KEY = 'aqeaw_admin_user'
+
+export type Role = 'superadmin' | 'admin' | 'judge'
+
+export interface SessionUser {
+  id: string
+  username: string
+  name: string
+  role: Role
+}
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null
   return window.localStorage.getItem(TOKEN_KEY)
 }
 
-export function setToken(token: string) {
-  window.localStorage.setItem(TOKEN_KEY, token)
-}
-
-export function getUser(): AdminUser | null {
+export function getSessionUser(): SessionUser | null {
   if (typeof window === 'undefined') return null
   try {
     const raw = window.localStorage.getItem(USER_KEY)
-    return raw ? (JSON.parse(raw) as AdminUser) : null
+    return raw ? (JSON.parse(raw) as SessionUser) : null
   } catch {
     return null
   }
 }
 
-export function setUser(user: AdminUser) {
-  try {
-    window.localStorage.setItem(USER_KEY, JSON.stringify(user))
-  } catch {
-    /* storage unavailable — the token alone is enough to work */
-  }
+export function setSession(token: string, user: SessionUser) {
+  window.localStorage.setItem(TOKEN_KEY, token)
+  window.localStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 export function clearToken() {
@@ -35,52 +37,28 @@ export function clearToken() {
   window.localStorage.removeItem(USER_KEY)
 }
 
-/**
- * Error carrying the API's status and the extra fields the login endpoints
- * return (`reason`, `attemptsLeft`, `retryAfter`) so callers can show a
- * precise message instead of a generic failure.
- */
-export class ApiError extends Error {
-  status: number
-  reason?: string
-  attemptsLeft?: number
-  retryAfter?: number
-
-  constructor(
-    status: number,
-    message: string,
-    extra: { reason?: string; attemptsLeft?: number; retryAfter?: number } = {}
-  ) {
-    super(message)
-    this.name = 'ApiError'
-    this.status = status
-    this.reason = extra.reason
-    this.attemptsLeft = extra.attemptsLeft
-    this.retryAfter = extra.retryAfter
-  }
+/** Where each role lands after login. */
+export function homeFor(role: Role | undefined) {
+  return role === 'judge' ? '/judge' : '/admin'
 }
 
 /**
- * POST helper for the public login endpoints. Deliberately does NOT go through
- * `request()`: a 401 here is an expected answer, not a dead session, so it must
- * not clear the token or bounce the browser back to /admin/login.
+ * Page guard: returns true if the current session has the role.
+ * Otherwise redirects (to login, or to the other role's home) and returns false.
  */
-async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  const data: unknown = await res.json().catch(() => null)
-  if (!res.ok) {
-    const d = (data ?? {}) as Record<string, unknown>
-    throw new ApiError(res.status, typeof d.error === 'string' ? d.error : res.statusText, {
-      reason: typeof d.reason === 'string' ? d.reason : undefined,
-      attemptsLeft: typeof d.attemptsLeft === 'number' ? d.attemptsLeft : undefined,
-      retryAfter: typeof d.retryAfter === 'number' ? d.retryAfter : undefined,
-    })
+export function guardRole(role: Role, replace: (href: string) => void): boolean {
+  const user = getSessionUser()
+  if (!getToken() || !user) {
+    replace('/admin/login')
+    return false
   }
-  return data as T
+  // A superadmin can do everything an admin can, so it satisfies 'admin' too.
+  const satisfied = user.role === role || (role === 'admin' && user.role === 'superadmin')
+  if (!satisfied) {
+    replace(homeFor(user.role))
+    return false
+  }
+  return true
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -91,7 +69,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set('Content-Type', 'application/json')
   }
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers })
+  const res = await fetch(`${apiBase()}${path}`, { ...init, headers })
   if (res.status === 401) {
     clearToken()
     if (typeof window !== 'undefined' && !window.location.pathname.endsWith('/admin/login')) {
@@ -99,23 +77,91 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new Error('Unauthorized')
   }
+  if (res.status === 403) {
+    // Logged in, but with the other role — send them to their own page.
+    if (typeof window !== 'undefined') window.location.href = homeFor(getSessionUser()?.role)
+    throw new Error('Forbidden')
+  }
   if (!res.ok) {
-    // Parse the API's {error} so callers can show it, and keep the status so a
-    // 403 (signed in, wrong role) can be told apart from a real failure.
-    const text = await res.text().catch(() => '')
-    let message = text || res.statusText
+    let message = res.statusText
     try {
-      const parsed = JSON.parse(text) as { error?: unknown }
-      if (typeof parsed.error === 'string') message = parsed.error
+      const body = await res.json()
+      message = body?.error || message
     } catch {
-      /* not JSON — keep the raw text */
+      /* not JSON */
     }
-    throw new ApiError(res.status, message)
+    throw new Error(message)
   }
   return res.json() as Promise<T>
 }
 
-// ---------- Typed API ----------
+async function downloadBlob(path: string, fallbackName: string) {
+  const res = await fetch(`${apiBase()}${path}`, {
+    headers: { Authorization: `Bearer ${getToken() ?? ''}` },
+  })
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`)
+  const disposition = res.headers.get('Content-Disposition') || ''
+  const match = /filename="([^"]+)"/.exec(disposition)
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = match ? decodeURIComponent(match[1]) : fallbackName
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export type LoginResult =
+  | { token: string; user: SessionUser; codeRequired?: false }
+  | { codeRequired: true; challenge: string; email: string }
+
+/** Error from the login endpoints, with the server's details attached. */
+export class AuthError extends Error {
+  status: number
+  data: { reason?: string; attemptsLeft?: number; retryAfter?: number }
+  constructor(status: number, message: string, data: AuthError['data']) {
+    super(message)
+    this.status = status
+    this.data = data
+  }
+}
+
+async function authPost<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${apiBase()}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new AuthError(res.status, data?.error || res.statusText, data || {})
+  return data as T
+}
+
+// ---------- Shared types ----------
+
+export interface Criterion {
+  key: string
+  /** Weight: the most points this criterion can add to the total */
+  max: number
+  /** Judges rate 1..scale (5) */
+  scale: number
+  ar: { label: string; hint: string }
+  en: { label: string; hint: string }
+}
+
+export interface EvaluationSummary {
+  avg: number
+  count: number
+  maxTotal: number
+  judges: { name: string; total: number }[]
+}
+
+/** Weighted points for one criterion: (weight × rating) ÷ scale */
+export function weightedScore(c: Criterion, rating: number) {
+  return Math.round(((c.max * rating) / (c.scale || 5)) * 100) / 100
+}
+
+// ---------- Admin types ----------
 
 export interface StatsResponse {
   total: number
@@ -133,11 +179,24 @@ export interface ApplicationListItem {
   subtype: string
   affiliation: string
   createdAt: string
+  code: string
+  evaluation: EvaluationSummary | null
+  result: Result
+}
+
+export type Result = 'winner' | 'notWinner' | 'pending'
+
+export interface JudgingSettings {
+  passScore: number
+  minJudges: number
+  maxTotal: number
 }
 
 export interface ListResponse {
   items: ApplicationListItem[]
   counts: { personal: number; organization: number }
+  resultCounts: Record<Result, number>
+  settings: JudgingSettings
 }
 
 export interface ListFilters {
@@ -146,121 +205,141 @@ export interface ListFilters {
   affiliation?: string
   from?: string
   to?: string
+  result?: '' | Result
+  sort?: 'date' | 'score'
   limit?: number
   skip?: number
+}
+
+export interface AdminEvaluation {
+  _id: string
+  judgeName: string
+  scores: Record<string, number>
+  total: number
+  maxTotal: number
+  comment: string
+  updatedAt: string
 }
 
 export interface DetailResponse {
   doc: Record<string, unknown>
   type: 'personal' | 'organization'
+  code: string
+  criteria: Criterion[]
+  maxTotal: number
+  evaluations: AdminEvaluation[]
+  result: Result
+  settings: { passScore: number; minJudges: number }
 }
 
-// ---------- Login ----------
+/** Alias kept for the accounts page, which calls it ManagedUser. */
+export type ManagedUser = DashboardUser
 
-export type Role = 'superadmin' | 'admin' | 'judge'
-
-export interface AdminUser {
-  id: string
-  username: string
-  name: string
-  role: Role
-}
-
-/** A dashboard account as the superadmin-only /admin/users endpoints return it. */
-export interface ManagedUser {
+export interface DashboardUser {
   _id: string
   username: string
   name: string
   role: Role
-  /** Empty string when two-step email login is off for this account. */
   email: string
   active: boolean
   lastLoginAt: string | null
   createdAt: string
-  /** Evaluations submitted — only ever non-zero for judges. */
   evaluations: number
 }
 
-export interface NewUser {
-  username: string
-  name: string
-  role: Role
-  password: string
-  email?: string
+// ---------- Profile cards ----------
+
+export interface ProfileCardFields {
+  tag: string
+  rank: string
+  rname: string
+  h1: string
+  h2: string
+  p1: string
+  p2: string
+  foot: string
+  mode: 'cutout' | 'circle'
+  variant: '1' | '2' | '3'
+  navy: string
+  gold: string
+  footc: string
+  published: boolean
+  order: number
 }
 
-/** Every field optional: only what you send is changed. */
-export interface UserPatch {
-  name?: string
-  role?: Role
-  password?: string
-  email?: string
-  active?: boolean
+export interface ProfileCardItem extends ProfileCardFields {
+  _id: string
+  /** Path on the API server, e.g. /profile-cards/photo/<id>; '' when there is no photo */
+  photoUrl: string
+  createdAt: string
+  updatedAt: string
 }
 
-/** Signed in — the account has no email, so no code was needed. */
-export interface LoginSession {
-  ok: true
-  token: string
-  user: AdminUser
+/** photo: a data URL to replace it, '' to remove it, leave out to keep it */
+export type ProfileCardBody = Partial<ProfileCardFields> & { photo?: string }
+
+/** Full URL for a card photo path returned by the API. */
+export function profileCardPhotoSrc(photoUrl: string) {
+  return photoUrl ? `${apiBase()}${photoUrl}` : ''
 }
 
-/** Password was correct, but a 6-digit code was emailed and must be verified. */
-export interface LoginCodeRequired {
-  ok: true
-  codeRequired: true
-  /** Short-lived token tying the code back to this login attempt. */
-  challenge: string
-  /** Masked address the code was sent to, e.g. "ir****@example.com". */
-  email: string
+/** Published cards for the homepage (no login needed). */
+export async function fetchPublishedProfileCards(): Promise<ProfileCardItem[]> {
+  const res = await fetch(`${apiBase()}/profile-cards`)
+  if (!res.ok) throw new Error(`Failed to load cards: ${res.status}`)
+  const data = (await res.json()) as { cards: ProfileCardItem[] }
+  return data.cards
 }
 
-export type LoginResponse = LoginSession | LoginCodeRequired
+// ---------- Judge types ----------
 
-export function isCodeRequired(res: LoginResponse): res is LoginCodeRequired {
-  return 'codeRequired' in res && res.codeRequired === true
+export interface JudgeListItem {
+  ref: string
+  code: string
+  achievementsCount: number
+  myEvaluation: { done: true } | null
 }
+
+export interface JudgeListResponse {
+  items: JudgeListItem[]
+  progress: { evaluated: number; total: number }
+}
+
+/** What a judge sees of a criterion: no weight. */
+export type JudgeCriterion = Omit<Criterion, 'max'>
+
+export interface MyEvaluation {
+  scores: Record<string, number>
+  comment: string
+  updatedAt: string
+}
+
+export interface JudgeDetailResponse {
+  ref: string
+  code: string
+  nominationReason: string
+  achievements: {
+    index: number
+    title: string
+    description: string
+    file: { available: boolean; ext?: string; size?: number | null } | null
+  }[]
+  criteria: JudgeCriterion[]
+  myEvaluation: MyEvaluation | null
+}
+
+// ---------- API ----------
 
 export const adminApi = {
-  /**
-   * Step 1. Accounts without an email are signed in straight away and the
-   * response carries a token; accounts with one get `codeRequired` instead —
-   * use `isCodeRequired()` to tell them apart, then call `verifyLoginCode`.
-   */
+  /** Step 1: password. Returns a session, or a challenge if an email code is needed. */
   login: (username: string, password: string) =>
-    postJson<LoginResponse>('/admin/login', { username, password }),
+    authPost<LoginResult>('/admin/login', { username, password }),
 
-  /** Step 2. Exchanges the emailed 6-digit code for a session token. */
-  verifyLoginCode: (challenge: string, code: string) =>
-    postJson<LoginSession>('/admin/login/verify', { challenge, code }),
+  /** Step 2: the 6-digit code from the email. */
+  verifyCode: (challenge: string, code: string) =>
+    authPost<{ token: string; user: SessionUser }>('/admin/login/verify', { challenge, code }),
 
-  /** Sends a fresh code. The previous one keeps working in case it arrives late. */
-  resendLoginCode: (challenge: string) =>
-    postJson<{ ok: true }>('/admin/login/resend', { challenge }),
-
-  /** Who am I — any signed-in dashboard account can call this. */
-  me: () => request<{ user: ManagedUser }>('/admin/me'),
-
-  // ---- Account management (superadmin only; others get 403) ----
-
-  listUsers: () => request<{ users: ManagedUser[] }>('/admin/users'),
-
-  createUser: (user: NewUser) =>
-    request<{ user: ManagedUser }>('/admin/users', {
-      method: 'POST',
-      body: JSON.stringify(user),
-    }),
-
-  updateUser: (id: string, patch: UserPatch) =>
-    request<{ user: ManagedUser }>(`/admin/users/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify(patch),
-    }),
-
-  deleteUser: (id: string) =>
-    request<{ ok: true }>(`/admin/users/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    }),
+  resendCode: (challenge: string) => authPost<{ ok: true }>('/admin/login/resend', { challenge }),
 
   stats: () => request<StatsResponse>('/admin/stats'),
 
@@ -275,39 +354,58 @@ export const adminApi = {
   detail: (type: 'personal' | 'organization', id: string) =>
     request<DetailResponse>(`/admin/applications/${type}/${id}`),
 
-  /**
-   * Download a file from GridFS via the admin API.
-   * @param fileId - the GridFS ObjectId string
-   * @param originalName - optional filename for the download
-   */
-  async downloadFile(fileId: string, originalName?: string) {
-    const res = await fetch(`${API_BASE}/admin/applications/file/${encodeURIComponent(fileId)}`, {
-      headers: { Authorization: `Bearer ${getToken() ?? ''}` },
-    })
-    if (!res.ok) throw new Error(`Download failed: ${res.status}`)
-    const blob = await res.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = originalName || fileId
-    a.click()
-    URL.revokeObjectURL(url)
-  },
+  /** Download a file from GridFS via the admin API. */
+  downloadFile: (fileId: string, originalName?: string) =>
+    downloadBlob(`/admin/applications/file/${encodeURIComponent(fileId)}`, originalName || fileId),
 
   async downloadExport(filters: { type?: string; from?: string; to?: string } = {}) {
     const params = new URLSearchParams()
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params.set(k, v)
     })
-    const url = `${API_BASE}/admin/applications/export.xlsx?${params.toString()}`
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${getToken() ?? ''}` } })
-    if (!res.ok) throw new Error(`Export failed: ${res.status}`)
-    const blob = await res.blob()
-    const href = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = href
-    a.download = `applications-${new Date().toISOString().slice(0, 10)}.xlsx`
-    a.click()
-    URL.revokeObjectURL(href)
+    await downloadBlob(
+      `/admin/applications/export.xlsx?${params.toString()}`,
+      `applications-${new Date().toISOString().slice(0, 10)}.xlsx`
+    )
   },
+
+  // Delete evaluations (the judge can then score again)
+  deleteEvaluation: (id: string) => request<{ ok: true }>(`/admin/evaluations/${id}`, { method: 'DELETE' }),
+  deleteAllEvaluations: (type: 'personal' | 'organization', id: string) =>
+    request<{ ok: true; deleted: number }>(`/admin/applications/${type}/${id}/evaluations`, { method: 'DELETE' }),
+
+  // Winning rules
+  saveSettings: (body: { passScore: number; minJudges: number }) =>
+    request<{ settings: JudgingSettings }>('/admin/settings', { method: 'PUT', body: JSON.stringify(body) }),
+
+  // Accounts
+  /** Who am I, according to the server. Any signed-in account may call it. */
+  me: () => request<{ user: DashboardUser }>('/admin/me'),
+
+  users: () => request<{ users: DashboardUser[] }>('/admin/users'),
+  createUser: (body: { username: string; name: string; role: Role; password: string; email?: string }) =>
+    request<{ user: DashboardUser }>('/admin/users', { method: 'POST', body: JSON.stringify(body) }),
+  updateUser: (id: string, body: Partial<{ name: string; role: Role; password: string; active: boolean; email: string }>) =>
+    request<{ user: DashboardUser }>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteUser: (id: string) => request<{ ok: true }>(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  // Profile cards (homepage)
+  profileCards: () => request<{ cards: ProfileCardItem[] }>('/admin/profile-cards'),
+  createProfileCard: (body: ProfileCardBody) =>
+    request<{ card: ProfileCardItem }>('/admin/profile-cards', { method: 'POST', body: JSON.stringify(body) }),
+  updateProfileCard: (id: string, body: ProfileCardBody) =>
+    request<{ card: ProfileCardItem }>(`/admin/profile-cards/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteProfileCard: (id: string) => request<{ ok: true }>(`/admin/profile-cards/${id}`, { method: 'DELETE' }),
+}
+
+export const judgeApi = {
+  list: () => request<JudgeListResponse>('/judge/applications'),
+  detail: (ref: string) => request<JudgeDetailResponse>(`/judge/applications/${encodeURIComponent(ref)}`),
+  submit: (ref: string, body: { scores: Record<string, number>; comment: string }) =>
+    request<{ ok: true; evaluation: MyEvaluation }>(`/judge/applications/${encodeURIComponent(ref)}/evaluation`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  downloadFile: (ref: string, index: number) =>
+    downloadBlob(`/judge/applications/${encodeURIComponent(ref)}/file/${index}`, `achievement-${index + 1}`),
 }
