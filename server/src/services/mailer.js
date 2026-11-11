@@ -10,7 +10,12 @@ function getTransporter() {
   const host = process.env.SMTP_HOST
   const port = Number(process.env.SMTP_PORT || 587)
   const user = (process.env.SMTP_USER || '').trim()
-  const pass = process.env.SMTP_PASS
+  // Trimmed for the same reason as the username: a password pasted into a .env
+  // file or a hosting provider's config UI very easily carries a trailing space
+  // or newline, and the server then answers "535 Authentication unsuccessful",
+  // which reads exactly like a wrong password. A password that genuinely ends
+  // in whitespace is vanishingly rare next to that.
+  const pass = (process.env.SMTP_PASS || '').trim()
 
   if (!host || !user || !pass) {
     // Names only, never values — this line ends up in the hosting provider's logs.
