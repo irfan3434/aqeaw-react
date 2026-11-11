@@ -17,7 +17,9 @@ const content = {
     filterAll: 'All',
     filterPending: 'Not scored yet',
     filterDone: 'Scored',
+    colNum: '#',
     colCode: 'Candidate code',
+    colSubmitted: 'Submitted',
     colAchievements: 'Achievements',
     colMyScore: 'Status',
     scored: '✓ Scored',
@@ -38,7 +40,9 @@ const content = {
     filterAll: 'الكل',
     filterPending: 'لم أقيّمه بعد',
     filterDone: 'تم تقييمه',
+    colNum: '#',
     colCode: 'رمز المرشح',
+    colSubmitted: 'تاريخ التقديم',
     colAchievements: 'الإنجازات',
     colMyScore: 'الحالة',
     scored: '✓ تم التقييم',
@@ -61,7 +65,8 @@ export default function JudgeHomePage() {
   const [data, setData] = useState<JudgeListResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
+  // Judges open this to score, so start on what they still have to do.
+  const [filter, setFilter] = useState<Filter>('pending')
   const [name, setName] = useState('')
 
   useEffect(() => {
@@ -82,6 +87,15 @@ export default function JudgeHomePage() {
     if (filter === 'done') return all.filter((i) => i.myEvaluation)
     return all
   }, [data, filter])
+
+  const fmtDate = (iso: string | null) =>
+    iso
+      ? new Date(`${iso}T00:00:00`).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '—'
 
   const progress = data?.progress
   const pct = progress && progress.total ? Math.round((progress.evaluated / progress.total) * 100) : 0
@@ -141,7 +155,9 @@ export default function JudgeHomePage() {
             <table className={styles.adminTable}>
               <thead>
                 <tr>
+                  <th>{t.colNum}</th>
                   <th>{t.colCode}</th>
+                  <th>{t.colSubmitted}</th>
                   <th>{t.colAchievements}</th>
                   <th>{t.colMyScore}</th>
                   <th>{t.colAction}</th>
@@ -150,9 +166,13 @@ export default function JudgeHomePage() {
               <tbody>
                 {items.map((item) => (
                   <tr key={item.code} onClick={() => router.push(`/judge/${item.ref}`)}>
+                    <td data-label={t.colNum}>
+                      <span className={styles.adminSeq}>{item.seq}</span>
+                    </td>
                     <td data-label={t.colCode}>
                       <span className={styles.adminCode}>{item.code}</span>
                     </td>
+                    <td data-label={t.colSubmitted}>{fmtDate(item.submittedOn)}</td>
                     <td data-label={t.colAchievements}>{item.achievementsCount}</td>
                     <td data-label={t.colMyScore}>
                       {item.myEvaluation ? (

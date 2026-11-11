@@ -296,7 +296,11 @@ export async function fetchPublishedProfileCards(): Promise<ProfileCardItem[]> {
 export interface JudgeListItem {
   ref: string
   code: string
+  /** Position in the full list, stable across filters. */
+  seq: number
   achievementsCount: number
+  /** Submission date as YYYY-MM-DD. Date only — never a time. */
+  submittedOn: string | null
   myEvaluation: { done: true } | null
 }
 

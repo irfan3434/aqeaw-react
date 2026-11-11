@@ -4,10 +4,25 @@ import {
   PersonalApplication,
   OrganizationApplication,
 } from '../models/Application.js'
-import { sendSubmissionNotification } from '../services/mailer.js'
+import { sendSubmissionNotification, sendJudgeNewApplicationNotice } from '../services/mailer.js'
 import { uploadToGridFS } from '../services/gridfsStorage.js'
+import { User } from '../models/User.js'
+import { candidateCode } from '../services/anonymize.js'
 
 const router = Router()
+
+/**
+ * Email every active judge who has an address on file. Judges without one
+ * simply aren't notified — they still see the candidate when they sign in.
+ */
+async function notifyJudges(doc) {
+  const judges = await User.find(
+    { role: 'judge', active: true, email: { $nin: ['', null] } },
+    { name: 1, email: 1 }
+  ).lean()
+  if (!judges.length) return
+  await sendJudgeNewApplicationNotice(judges, candidateCode(doc._id))
+}
 
 router.post(
   '/submit-application',
@@ -125,6 +140,12 @@ router.post(
 
       sendSubmissionNotification(doc, type).catch((err) => {
         console.error('[submit-application] mailer threw:', err)
+      })
+
+      // Tell the judges there is something to score. Runs after the response,
+      // so a slow or broken mail server can never fail a submission.
+      notifyJudges(doc).catch((err) => {
+        console.error('[submit-application] judge notice threw:', err)
       })
     } catch (err) {
       console.error('[submit-application] error:', err)

@@ -1654,3 +1654,15 @@
     grid-column: auto;
   }
 }
+
+/* Row number in the judge list — a stable handle ("I'm up to #12") that the
+   server assigns, so it doesn't renumber when the list is filtered. */
+.adminSeq {
+  display: inline-block;
+  min-width: 26px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8b95a5;
+}

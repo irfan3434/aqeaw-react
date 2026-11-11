@@ -61,12 +61,19 @@ router.get('/judge/applications', async (req, res) => {
     ]
       // Oldest first, so the order stays stable as new applications arrive.
       .sort((a, b) => new Date(a.d.createdAt).getTime() - new Date(b.d.createdAt).getTime())
-      .map(({ d, type }) => {
+      .map(({ d, type }, i) => {
         const ev = mineById.get(String(d._id))
         return {
           ref: encryptRef(type, d._id),
           code: candidateCode(d._id),
+          // Position in the full list, numbered here rather than in the page so
+          // it stays the same when a judge filters to "not scored yet".
+          seq: i + 1,
           achievementsCount: (d.achievements || []).length,
+          // Date only, never the time. The ordering already implies roughly when
+          // each candidate applied; an exact timestamp would tie a code to a
+          // person far more tightly.
+          submittedOn: d.createdAt ? new Date(d.createdAt).toISOString().slice(0, 10) : null,
           myEvaluation: ev ? { done: true } : null,
         }
       })

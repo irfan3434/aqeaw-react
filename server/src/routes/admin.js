@@ -13,6 +13,7 @@ import { candidateCode } from '../services/anonymize.js'
 import { hashPassword } from '../services/passwords.js'
 import { Settings, getJudgingSettings, resultFor } from '../models/Settings.js'
 import { buildApplicationsWorkbook } from '../services/excelExport.js'
+import { sendTestEmail } from '../services/mailer.js'
 import { getGridFSReadStream, getGridFSFileInfo } from '../services/gridfsStorage.js'
 
 const router = Router()
@@ -341,6 +342,17 @@ router.delete('/admin/users/:id', async (req, res) => {
     console.error('[admin/users DELETE]', err)
     res.status(500).json({ error: 'Failed to delete user' })
   }
+})
+
+/* -------------------------------------------------------------------------- */
+/*  POST /admin/test-email                                                    */
+/*  Sends a test message to the configured NOTIFY_TO and returns what the     */
+/*  mail server actually said, so a silent delivery failure can be diagnosed  */
+/*  without host logs. The recipient comes from env, never from the request.  */
+/* -------------------------------------------------------------------------- */
+router.post('/admin/test-email', async (_req, res) => {
+  const result = await sendTestEmail()
+  res.status(result.ok ? 200 : 502).json(result)
 })
 
 /* -------------------------------------------------------------------------- */

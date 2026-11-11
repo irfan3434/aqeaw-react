@@ -97,6 +97,14 @@ Each rating becomes `(weight × rating) ÷ 5`, so a total is out of **100**.
 Judges never see applicant names — only a candidate code from
 `src/services/anonymize.js`.
 
+When an application arrives, every **active judge with an email on file** gets a
+notice that something is waiting, carrying only the candidate code and a link to
+the judging page — never the applicant's name, contact details or category. Each
+judge is mailed separately so they don't see one another's addresses, and the
+whole thing is fire-and-forget: a mail failure can never fail a submission.
+Judges without an email are simply not notified; they still see the candidate
+when they sign in.
+
 A candidate's result comes from the average across judges, against two settings
 admins edit in the dashboard (`passScore`, default 70; `minJudges`, default 1):
 `pending` until enough judges have scored, then `winner` if the average is
@@ -118,6 +126,7 @@ Admin (`Authorization: Bearer <token>`, role `admin`):
 - `GET    /admin/applications/file/:fileId`
 - `GET    /admin/applications/:type/:id`
 - `GET    /admin/me`
+- `POST   /admin/test-email` — sends a test message to `NOTIFY_TO` and returns what the mail server said. The recipient always comes from the environment, never the request, so it can't be used to mail third parties. Use it to tell "SMTP is misconfigured" apart from "the message was sent but never arrived".
 - `GET/POST/PATCH/DELETE /admin/users[/:id]`
 - `GET/PUT /admin/settings`
 - `DELETE /admin/evaluations/:id`, `DELETE /admin/applications/:type/:id/evaluations`
