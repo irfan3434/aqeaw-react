@@ -1743,3 +1743,10 @@
   font-weight: 600;
   color: #8b95a5;
 }
+
+/* Overrides `.adminCriterionText small`, which is inline — without this the
+   points run straight on from the end of the criterion hint. */
+.adminCriterionText .adminCriterionPoints {
+  display: block;
+  margin-top: 4px;
+}

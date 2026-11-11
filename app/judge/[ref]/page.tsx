@@ -108,10 +108,14 @@ export default function JudgeEvaluatePage() {
     if (!data) return 0
     const sum = data.criteria.reduce((acc, c) => {
       const r = Number(scores[c.key])
-      return acc + (Number.isInteger(r) && r > 0 ? weightedScore(c, r) : 0)
+      const usable = Number.isInteger(r) && r > 0 && Number.isFinite(c.max)
+      return acc + (usable ? weightedScore(c, r) : 0)
     }, 0)
     return Math.round(sum * 100) / 100
   }, [data, scores])
+
+  const hasWeights =
+    Boolean(data) && data.criteria.length > 0 && data.criteria.every((c) => Number.isFinite(c.max))
 
   const complete = data?.criteria.every((c) => /^[1-9]$/.test(scores[c.key] ?? '') && Number(scores[c.key]) <= (c.scale || 5)) ?? false
 
@@ -234,9 +238,11 @@ export default function JudgeEvaluatePage() {
                 <div className={styles.adminCriterionText}>
                   <label id={`c-${c.key}`}>{c[lang].label}</label>
                   <small>{c[lang].hint}</small>
-                  <small className={styles.adminCriterionPoints}>
-                    {scores[c.key] ? weightedScore(c, Number(scores[c.key])) : '—'} / {c.max}
-                  </small>
+                  {Number.isFinite(c.max) && (
+                    <small className={styles.adminCriterionPoints}>
+                      {scores[c.key] ? weightedScore(c, Number(scores[c.key])) : '—'} / {c.max}
+                    </small>
+                  )}
                 </div>
                 <div className={styles.adminCriterionInput}>
                   {/* Slider */}
@@ -297,6 +303,7 @@ export default function JudgeEvaluatePage() {
           </div>
           </fieldset>
 
+          {hasWeights && (
           <div className={styles.adminWeightedBand}>
             <div className={styles.adminWeightedLabel}>
               <strong>{t.weighted}</strong>
@@ -304,12 +311,13 @@ export default function JudgeEvaluatePage() {
             </div>
             <div className={styles.adminWeightedValue}>
               <strong>{locked && data.myEvaluation ? data.myEvaluation.total : liveTotal}</strong>
-              <small>/ {locked && data.myEvaluation ? data.myEvaluation.maxTotal : data.maxTotal}</small>
+              <small>/ {(locked && data.myEvaluation ? data.myEvaluation.maxTotal : data.maxTotal) ?? 100}</small>
             </div>
             {!locked && !complete && (
               <span className={styles.adminWeightedPartial}>{t.weightedPartial}</span>
             )}
           </div>
+          )}
 
           <div className={styles.adminSubmitRow}>
             {!locked && (

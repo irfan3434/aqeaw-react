@@ -178,9 +178,10 @@ export default function JudgeHomePage() {
                     <td data-label={t.colSubmitted}>{fmtDate(item.submittedOn)}</td>
                     <td data-label={t.colAchievements}>{item.achievementsCount}</td>
                     <td data-label={t.colScore}>
-                      {item.myEvaluation ? (
+                      {item.myEvaluation && Number.isFinite(item.myEvaluation.total) ? (
                         <span className={styles.adminScoreValue}>
-                          {item.myEvaluation.total} <small>/ {item.myEvaluation.maxTotal}</small>
+                          {item.myEvaluation.total}{' '}
+                          <small>/ {item.myEvaluation.maxTotal ?? 100}</small>
                         </span>
                       ) : (
                         <span className={styles.adminScoreNone}>—</span>
