@@ -116,7 +116,7 @@ export default function Navbar() {
 
             <div className={styles.headerLogo}>
               <Link href="/" aria-label="Home">
-                <NextImage src="/images/AQ-Logo.png" alt="Logo" width={100} height={100} priority />
+                <NextImage src="/images/AQ-Logo.png" alt="Logo" width={100} height={100} priority style={{ display: "block" }}/>
               </Link>
             </div>
 
