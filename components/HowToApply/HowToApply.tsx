@@ -130,6 +130,7 @@ interface Content {
 
   // Local extras (not in your JSON but needed by the UI)
   required_field_suffix: string
+  submitting: string
   alert_required: string
   alert_success: string
   alert_failure: string
@@ -205,6 +206,7 @@ const content: Record<'en' | 'ar', Content> = {
     org12: 'Add Another Achievement',
 
     required_field_suffix: ' (This field is required)',
+    submitting: 'Submitting…',
     alert_required: 'Please fill out all required fields.',
     alert_success: 'Application submitted successfully.',
     alert_failure: 'Submission failed. Please try again.',
@@ -278,6 +280,7 @@ const content: Record<'en' | 'ar', Content> = {
     org12: 'إضافة إنجاز آخر',
 
     required_field_suffix: ' (هذا الحقل مطلوب)',
+    submitting: '... جاري الإرسال',
     alert_required: 'الرجاء تعبئة جميع الحقول المطلوبة.',
     alert_success: 'تم إرسال الطلب بنجاح.',
     alert_failure: 'فشل الإرسال. حاول مرة أخرى.',
@@ -340,6 +343,13 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   // ---------- submit ----------
 
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  // Uploading four attachments over a phone connection takes long enough that
+  // an impatient applicant clicks again — and every click used to create a
+  // whole application and email every judge. The ref is the guard that
+  // actually holds: `disabled` depends on a re-render that a second click can
+  // beat, a ref is set before this handler yields.
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submittingRef = useRef(false)
 
   // ---------- Submit-button enable logic ----------
   const isWordCountValid = useMemo(() => {
@@ -352,7 +362,8 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
     return all.every((a) => !a.file || a.file.size <= MAX_FILE_SIZE_MB * 1024 * 1024)
   }, [achievements, orgAchievements])
 
-  const isSubmitEnabled = ndaChecked && isWordCountValid && isFileSizeValid
+  const isSubmitEnabled =
+    ndaChecked && isWordCountValid && isFileSizeValid && !isSubmitting && !submitSuccess
 
   // ---------- Reset transient UI state on language flip ----------
   // React's documented "adjust state when a prop changes" pattern: compare
@@ -538,10 +549,17 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
         fd.append('specificAffiliation', specificAffiliation)
       }
 
-      achievements.forEach((a) => {
+      // uploadIndex[] names the achievement each file belongs to. Without it
+      // the server can only pair them by position, and since a file is sent
+      // only for the achievements that have one, attaching a document to the
+      // second achievement stored it against the first.
+      achievements.forEach((a, i) => {
         fd.append('achievementTitle[]', a.title)
         fd.append('description[]', a.description)
-        if (a.file) fd.append('upload[]', a.file)
+        if (a.file) {
+          fd.append('upload[]', a.file)
+          fd.append('uploadIndex[]', String(i))
+        }
       })
     } else {
       fd.append('organizationName', organizationName)
@@ -549,12 +567,21 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       fd.append('organizationEmail', organizationEmail)
       fd.append('organizationNumber', organizationNumber)
 
-      orgAchievements.forEach((a) => {
+      orgAchievements.forEach((a, i) => {
         fd.append('achievementTitleOrg[]', a.title)
         fd.append('descriptionOrg[]', a.description)
-        if (a.file) fd.append('uploadOrg[]', a.file)
+        if (a.file) {
+          fd.append('uploadOrg[]', a.file)
+          fd.append('uploadIndexOrg[]', String(i))
+        }
       })
     }
+
+    // A second click while the first upload is still in flight used to create
+    // a second application and a second round of judge emails.
+    if (submittingRef.current) return
+    submittingRef.current = true
+    setIsSubmitting(true)
 
     try {
       const res = await fetch(`${apiBase()}/submit-application`, { method: 'POST', body: fd })
@@ -578,6 +605,11 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       // Network failure, CORS, offline — nothing specific worth showing.
       console.error(err)
       alert(t.alert_failure)
+    } finally {
+      // Always released, so a failed attempt can be retried. On success the
+      // button stays disabled anyway, via submitSuccess.
+      submittingRef.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -921,13 +953,21 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                       {t.paragraph15}
                       {affiliationError && t.required_field_suffix}
                     </p>
+                    {/*
+                      The value posted is the stable code, not the label being
+                      read. Posting the label stored 'Al-Saraa' for an English
+                      visitor and 'محافظة بلقرن والسراة' for an Arabic one — the
+                      same affiliation under two names. It also meant switching
+                      language silently cleared the applicant's choice, because
+                      the checked test compared against the new translation.
+                    */}
                     <label htmlFor="alSraa">
                       <input
                         type="radio"
                         id="alSraa"
                         name="specificAffiliation"
-                        value={t.paragraph5}
-                        checked={specificAffiliation === t.paragraph5}
+                        value="alsaraa"
+                        checked={specificAffiliation === 'alsaraa'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
                           setAffiliationError(false)
@@ -941,8 +981,8 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         type="radio"
                         id="tahamah"
                         name="specificAffiliation"
-                        value={t.paragraph6}
-                        checked={specificAffiliation === t.paragraph6}
+                        value="tahamah"
+                        checked={specificAffiliation === 'tahamah'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
                           setAffiliationError(false)
@@ -1057,12 +1097,13 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
             id="submit-btn"
             className={styles.submitBtn}
             disabled={!isSubmitEnabled}
+            aria-busy={isSubmitting}
             style={{
               backgroundColor: isSubmitEnabled ? '#28a745' : '#ccc',
               cursor: isSubmitEnabled ? 'pointer' : 'not-allowed',
             }}
           >
-            {t.paragraph14}
+            {isSubmitting ? t.submitting : t.paragraph14}
           </button>
         </form>
       </div>

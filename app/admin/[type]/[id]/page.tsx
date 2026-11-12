@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useLanguage } from '../../../../lib/LanguageContext'
 import { adminApi, guardRole, weightedScore, type AdminEvaluation, type Criterion, type Result } from '../../../../lib/adminApi'
 import styles from '../../../../components/admin/Admin.module.css'
+import { affiliationLabel } from '../../../../lib/affiliations'
 
 const content = {
   en: {
@@ -383,7 +384,8 @@ export default function ApplicationDetailPage() {
                 <dt>{t.phone}</dt><dd>{doc.phone || '—'}</dd>
                 <dt>{t.userType}</dt><dd>{doc.userType || '—'}</dd>
                 <dt>{t.tribeChecked}</dt><dd>{doc.tribeChecked ? t.yes : t.no}</dd>
-                <dt>{t.affiliation}</dt><dd>{doc.specificAffiliation || '—'}</dd>
+                <dt>{t.affiliation}</dt>
+                <dd>{affiliationLabel(doc.specificAffiliation, lang) || '—'}</dd>
               </dl>
             </div>
 

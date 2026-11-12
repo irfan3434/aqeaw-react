@@ -8,6 +8,7 @@ import { sendSubmissionNotification, sendJudgeNewApplicationNotice } from '../se
 import { uploadToGridFS } from '../services/gridfsStorage.js'
 import { User } from '../models/User.js'
 import { candidateCode } from '../services/anonymize.js'
+import { normalizeAffiliation } from '../config/affiliations.js'
 
 const router = Router()
 
@@ -42,33 +43,70 @@ router.post(
 
       const asArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v])
 
-      const buildAchievements = async (titles, descs, fileList) => {
+      /**
+       * Decide which achievement each uploaded file belongs to.
+       *
+       * The form only sends a file for the achievements that actually have
+       * one, so the Nth file is not necessarily the Nth achievement. Pairing
+       * them by position meant that attaching a document to the second
+       * achievement stored it against the first — silently, and with a judge
+       * later reading a document that described something else entirely.
+       *
+       * The form now sends a parallel `uploadIndex[]` naming the slot each
+       * file belongs to. Anything that doesn't send usable indexes — a page
+       * cached from before this deploy, or a hand-made request — falls back to
+       * the old positional pairing, so a submission is never rejected over it.
+       */
+      const mapFilesToSlots = (fileList, rawIndexes) => {
+        const parsed = asArray(rawIndexes).map(Number)
+        const usable =
+          parsed.length === fileList.length &&
+          parsed.every((n) => Number.isInteger(n) && n >= 0)
+        if (!usable && parsed.length) {
+          console.warn(
+            `[submit-application] uploadIndex[] unusable (${parsed.length} for ` +
+              `${fileList.length} files) — pairing files by position`
+          )
+        }
+        const slots = new Map()
+        fileList.forEach((file, i) => {
+          const slot = usable ? parsed[i] : i
+          // First file wins a slot; a duplicate index would otherwise discard
+          // the attachment the applicant actually chose first.
+          if (!slots.has(slot)) slots.set(slot, file)
+        })
+        return slots
+      }
+
+      const buildAchievements = async (titles, descs, fileList, rawIndexes) => {
+        const slots = mapFilesToSlots(fileList, rawIndexes)
         const out = []
         for (let i = 0; i < titles.length; i++) {
           let fileData = undefined
+          const chosen = slots.get(i)
 
-          if (fileList[i] && fileList[i].buffer) {
+          if (chosen && chosen.buffer) {
             try {
               const result = await uploadToGridFS(
-                fileList[i].buffer,
-                fileList[i].originalname,
-                fileList[i].mimetype
+                chosen.buffer,
+                chosen.originalname,
+                chosen.mimetype
               )
               fileData = {
                 fileId: result.fileId,
                 filename: result.filename,
-                originalName: fileList[i].originalname,
-                mimeType: fileList[i].mimetype,
+                originalName: chosen.originalname,
+                mimeType: chosen.mimetype,
                 size: result.size,
               }
               console.log(`[gridfs] Stored: ${result.filename} (${result.fileId})`)
             } catch (err) {
               console.error('[gridfs] Upload failed:', err)
               fileData = {
-                filename: fileList[i].originalname,
-                originalName: fileList[i].originalname,
-                mimeType: fileList[i].mimetype,
-                size: fileList[i].size,
+                filename: chosen.originalname,
+                originalName: chosen.originalname,
+                mimeType: chosen.mimetype,
+                size: chosen.size,
               }
             }
           }
@@ -92,7 +130,12 @@ router.post(
         const descs = asArray(body['description[]'] ?? body.description)
         const uploaded = files['upload[]'] || []
 
-        const achievements = await buildAchievements(titles, descs, uploaded)
+        const achievements = await buildAchievements(
+          titles,
+          descs,
+          uploaded,
+          body['uploadIndex[]'] ?? body.uploadIndex
+        )
 
         doc = await PersonalApplication.create({
           userType,
@@ -113,7 +156,10 @@ router.post(
           email: body.email,
           phone: body.phone,
           tribeChecked: body.tribeCheckbox === 'on',
-          specificAffiliation: body.specificAffiliation || '',
+          // Stored as a stable code rather than whichever translated label
+          // the applicant happened to be reading. Labels posted by an older
+          // form are converted here, so both spellings end up as one value.
+          specificAffiliation: normalizeAffiliation(body.specificAffiliation),
           achievements,
           submittedFromIp: ip,
         })
@@ -123,7 +169,12 @@ router.post(
         const descs = asArray(body['descriptionOrg[]'] ?? body.descriptionOrg)
         const uploaded = files['uploadOrg[]'] || []
 
-        const achievements = await buildAchievements(titles, descs, uploaded)
+        const achievements = await buildAchievements(
+          titles,
+          descs,
+          uploaded,
+          body['uploadIndexOrg[]'] ?? body.uploadIndexOrg
+        )
 
         doc = await OrganizationApplication.create({
           organizationName: body.organizationName,

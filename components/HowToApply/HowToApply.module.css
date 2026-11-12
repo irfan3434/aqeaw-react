@@ -532,6 +532,133 @@
 
   .tribeCheckbox { vertical-align: middle; }
   .radioOptions { padding-left: 20px; }
+
+  /* ------------------------------------------------------------------
+     Everything below was missing at this width. The stylesheet defines
+     these rules twice — once under max-width:768px and once under
+     min-width:1024px — so between 769px and 1023px (iPad Air portrait
+     at 820px, iPad Pro 11" at 834px, most Android tablets) none of them
+     applied.
+
+     The NDA modal was the real casualty: without position:fixed it
+     rendered as a plain block at the top of the document instead of an
+     overlay, pushing the form down the page, and its iframe — sized
+     height:100% inside an auto-height parent — collapsed to nothing.
+     The applicant could not read the agreement they must tick.
+
+     Values copied from the desktop block, with the modal sized for a
+     tablet viewport. The two existing blocks are deliberately left
+     untouched so nothing changes on phones or desktops.
+     ------------------------------------------------------------------ */
+  .ndaModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+  }
+
+  .ndaModalContent {
+    position: relative;
+    margin: 5vh auto;
+    background-color: #fff;
+    padding: 20px;
+    width: 92%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+
+  .ndaContent { height: 60vh; overflow: hidden; }
+
+  .ndaContent iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .ndaSection {
+    margin: 40px 0px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .ndaSection {
+    margin: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    direction: rtl;
+  }
+
+  .ndaCheckbox {
+    margin-bottom: 0;
+    height: 16px;
+    margin-top: 0px;
+    box-shadow: none;
+  }
+
+  .ndaLink {
+    color: #fff;
+    text-decoration: underline;
+    cursor: pointer;
+    width: 90%;
+    box-sizing: border-box;
+  }
+
+  .submitBtn {
+    margin-top: 20px;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: not-allowed;
+    font-family: GraphikWide-Thin, sans-serif;
+  }
+
+  .submitBtn:enabled {
+    background-color: #28a745;
+    cursor: pointer;
+  }
+
+  .guidelinesList {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 25px 5px;
+  }
+
+  .guidelineHeading {
+    font-weight: 200;
+    font-size: 19px;
+    color: #c4a21e;
+    list-style-type: none;
+  }
+
+  .guidelineText {
+    font-weight: 200;
+    font-size: 19px;
+    color: #f9f9f9;
+    list-style-type: none;
+  }
+
+  .achievementFieldset ul li:before {
+    content: "\2714";
+    color: #c4a21e;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 1.2rem;
+    list-style-type: none;
+  }
 }
 
 /* ===== Desktop ===== */

@@ -4,6 +4,12 @@
  * saved Mongoose document shape.
  */
 
+import { affiliationLabel } from '../config/affiliations.js'
+
+/** "محافظة بلقرن والسراة / Al-Saraa" — matches the bilingual row headings. */
+const affiliationPair = (v) =>
+  v ? `${affiliationLabel(v, 'ar')} / ${affiliationLabel(v, 'en')}` : ''
+
 const td = (label, value) => `
   <tr>
     <td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; text-align:center; background-color: #f4f4f4;">${label}</td>
@@ -66,7 +72,7 @@ function renderPersonal(doc) {
       ${td('جنس مقدم الطلب / Applicant Gender', doc.gender)}
       ${td('البريد الإلكتروني / Email', escapeHtml(doc.email))}
       ${td('رقم الجوال / Phone', escapeHtml(doc.phone))}
-      ${td('حدد الانتماء / Specific Affiliation', escapeHtml(doc.specificAffiliation) || 'N/A')}
+      ${td('حدد الانتماء / Specific Affiliation', escapeHtml(affiliationPair(doc.specificAffiliation)) || 'N/A')}
     ${tableClose}
   `
 

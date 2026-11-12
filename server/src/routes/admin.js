@@ -8,6 +8,7 @@ import {
 import { Evaluation } from '../models/Evaluation.js'
 import { User } from '../models/User.js'
 import { CRITERIA, MAX_TOTAL } from '../config/criteria.js'
+import { affiliationQueryValues } from '../config/affiliations.js'
 import { requireAdmin, requireSuperadmin } from '../middleware/adminAuth.js'
 import { candidateCode } from '../services/anonymize.js'
 import { hashPassword } from '../services/passwords.js'
@@ -98,7 +99,11 @@ router.get('/admin/applications', async (req, res) => {
       personalFilter.$or = [{ fullName: re }, { email: re }, { phone: re }]
       orgFilter.$or = [{ organizationName: re }, { ownerName: re }, { organizationEmail: re }]
     }
-    if (affiliation) personalFilter.specificAffiliation = affiliation
+    // Match the canonical code and every label stored before the codes
+    // existed, so filtering still finds older applications.
+    if (affiliation) {
+      personalFilter.specificAffiliation = { $in: affiliationQueryValues(String(affiliation)) }
+    }
 
     const lim = Math.min(Number(limit) || 50, 200)
     const off = Math.max(Number(skip) || 0, 0)

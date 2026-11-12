@@ -17,6 +17,7 @@ import {
   type JudgingSettings,
 } from '../../lib/adminApi'
 import styles from '../../components/admin/Admin.module.css'
+import { AFFILIATIONS, affiliationLabel } from '../../lib/affiliations'
 
 const content = {
   en: {
@@ -407,10 +408,18 @@ export default function AdminDashboardPage() {
               onChange={(e) => setAffiliation(e.target.value)}
             >
               <option value="">{t.filterAffAny}</option>
-              <option value="Al-Saraa">Al-Saraa</option>
-              <option value="Tahamah">Tahamah</option>
-              <option value="السراة">السراة</option>
-              <option value="تهامة">تهامة</option>
+              {/*
+                One option per affiliation, filtering by its code. The four
+                hard-coded labels this replaces were matched against the stored
+                string exactly, so "السراة" never matched anything — the form
+                stored the full "محافظة بلقرن والسراة". The server now expands a
+                code to every spelling ever stored, old applications included.
+              */}
+              {AFFILIATIONS.map((a) => (
+                <option key={a.code} value={a.code}>
+                  {lang === 'ar' ? a.ar : a.en}
+                </option>
+              ))}
             </select>
           </div>
           <div className={styles.adminFilterGroup}>
@@ -477,7 +486,9 @@ export default function AdminDashboardPage() {
                     <td data-label={t.colName}>{item.name}</td>
                     <td data-label={t.colEmail}>{item.email}</td>
                     <td data-label={t.colPhone}>{item.phone}</td>
-                    <td data-label={t.colAffiliation}>{item.affiliation || '—'}</td>
+                    <td data-label={t.colAffiliation}>
+                      {affiliationLabel(item.affiliation, lang) || '—'}
+                    </td>
                     <td data-label={t.colScore}>
                       {item.evaluation ? (
                         <span className={styles.adminScoreCell}>

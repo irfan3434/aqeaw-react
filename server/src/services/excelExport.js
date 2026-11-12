@@ -1,5 +1,7 @@
 import ExcelJS from 'exceljs'
 
+import { affiliationLabel } from '../config/affiliations.js'
+
 /**
  * Build an XLSX workbook with two sheets — one per application type —
  * each row is a submission, with columns for every field. Achievements
@@ -59,7 +61,7 @@ export async function buildApplicationsWorkbook(personalDocs, orgDocs, summaries
       email: d.email || '',
       phone: d.phone || '',
       tribeChecked: d.tribeChecked ? 'Yes' : 'No',
-      specificAffiliation: d.specificAffiliation || '',
+      specificAffiliation: affiliationLabel(d.specificAffiliation, 'en'),
       referrerName: d.referrer?.fullName || '',
       referrerEmail: d.referrer?.email || '',
       referrerPhone: d.referrer?.phone || '',
