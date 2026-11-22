@@ -28,7 +28,7 @@ export const STREAM_VIDEO_UID = 'f5cd7c8e9fe6202e705ab388f9d98233'
  * file is actually sitting there, or the footer will link to a 404.
  * Putting public/docs/user-guide.pdf in place means: '/docs/user-guide.pdf'
  */
-export const GUIDE_PDF_PATH = ''
+export const GUIDE_PDF_PATH = '/docs/UserGuidePdf.pdf'
 
 /** Letterbox bars inside the player, matched to the footer navy. */
 const PLAYER_BACKGROUND = '#122f51'
