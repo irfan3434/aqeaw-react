@@ -40,6 +40,11 @@ const MAX_NOMINATION_WORDS = 100
 const MAX_FILE_SIZE_MB = 4
 const MAX_ACHIEVEMENTS = 4
 
+// Message colours for the navy form background, matching the field borders.
+// The previous red (#cb4028) was dark enough on #1a3f6b to read as black.
+const MSG_INVALID = '#ffb3a7'
+const MSG_VALID = '#8fe3ae'
+
 // ---------- Types ----------
 type FormType = 'personal' | 'organization'
 type UserType = 'self' | 'referral'
@@ -61,7 +66,7 @@ const newAchievement = (): Achievement => ({
   description: '',
   file: null,
   fileMessage: '',
-  fileMessageColor: '#cb4028',
+  fileMessageColor: MSG_INVALID,
 })
 
 
@@ -144,6 +149,7 @@ interface Content {
   err_phone: string
   err_age: string
   err_name: string
+  optional_suffix: string
   nda_hint: string
   blocked_words: string
   blocked_file: string
@@ -229,6 +235,7 @@ const content: Record<'en' | 'ar', Content> = {
     err_phone: 'Enter a valid phone number — digits only, 9 to 15 of them. For example 0501234567',
     err_age: 'Enter an age between 1 and 120.',
     err_name: 'Enter the full name using letters only.',
+    optional_suffix: ' (optional)',
     nda_hint:
       'Tick this box to enable the Submit Application button. You cannot submit until you confirm you have read the agreement.',
     blocked_words: 'One of your achievement descriptions is over the word limit.',
@@ -313,6 +320,7 @@ const content: Record<'en' | 'ar', Content> = {
     err_phone: 'أدخل رقم جوال صحيحًا — أرقام فقط، من 9 إلى 15 رقمًا.',
     err_age: 'أدخل عمرًا بين 1 و 120.',
     err_name: 'أدخل الاسم كاملًا بالحروف فقط.',
+    optional_suffix: ' (اختياري)',
     nda_hint:
       'فعّل هذا المربع ليصبح زر «تقديم الطلب» متاحًا. لا يمكن إرسال الطلب قبل تأكيد قراءة الاتفاقية.',
     blocked_words: 'أحد أوصاف الإنجازات تجاوز الحد المسموح من الكلمات.',
@@ -513,6 +521,8 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
         ['email', email],
         ['phone', phone]
       )
+      // Only required once the applicant says they have an affiliation.
+      if (tribeChecked) out.push(['specificAffiliation', specificAffiliation])
     } else {
       out.push(
         ['organizationName', organizationName],
@@ -533,9 +543,6 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
     for (const [key, value] of activeFields()) {
       const message = validateField(key, value)
       if (message) e[key] = message
-    }
-    if (formType === 'personal' && tribeChecked && !specificAffiliation) {
-      e.specificAffiliation = t.err_required
     }
     return e
   }
@@ -597,17 +604,17 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   // ---------- Handlers ----------
   const handleNominationChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
-    clearError('nominationReason')
+    liveUpdate('nominationReason', value)
     const wordCount = countWords(value)
     if (wordCount <= MAX_NOMINATION_WORDS) {
       setNominationReason(value)
       setNominationMessage({
         text: `${wordCount}/${MAX_NOMINATION_WORDS} ${t.paragraph18}`,
-        color: '#25ad25',
+        color: MSG_VALID,
       })
     } else {
       setNominationReason(truncateWords(value, MAX_NOMINATION_WORDS))
-      setNominationMessage({ text: t.paragraph171, color: '#cb4028' })
+      setNominationMessage({ text: t.paragraph171, color: MSG_INVALID })
     }
   }
 
@@ -645,7 +652,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
         updateAchievement(list, id, {
           file: null,
           fileMessage: '',
-          fileMessageColor: '#cb4028',
+          fileMessageColor: MSG_INVALID,
         })
         return
       }
@@ -653,8 +660,13 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       const valid = sizeMB <= MAX_FILE_SIZE_MB
       updateAchievement(list, id, {
         file,
-        fileMessage: valid ? `${t.paragraph122} ${Math.round(sizeMB)}MB` : t.paragraph121,
-        fileMessageColor: valid ? '#25ad25' : '#cb4028',
+        // Math.round reported every file under half a megabyte as "0MB".
+        fileMessage: valid
+          ? `${t.paragraph122} ${
+              sizeMB >= 1 ? `${sizeMB.toFixed(1)}MB` : `${Math.max(1, Math.round(file.size / 1024))}KB`
+            }`
+          : t.paragraph121,
+        fileMessageColor: valid ? MSG_VALID : MSG_INVALID,
       })
     }
 
@@ -906,7 +918,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 value={a.title}
                 onChange={(e) => {
                   updateAchievement(list, a.id, { title: e.target.value })
-                  clearError(`${list}Title${idx}`)
+                  liveUpdate(`${list}Title${idx}`, e.target.value)
                 }}
                 required
                 {...fieldProps(`${list}Title${idx}`, a.title)}
@@ -921,7 +933,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 value={a.description}
                 onChange={(e) => {
                   handleDescriptionChange(list, a.id)(e)
-                  clearError(`${list}Desc${idx}`)
+                  liveUpdate(`${list}Desc${idx}`, e.target.value)
                 }}
                 required
                 {...fieldProps(`${list}Desc${idx}`, a.description)}
@@ -929,12 +941,15 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
               {errorText(`${list}Desc${idx}`)}
               <p
                 className={styles.wordCountMessage}
-                style={{ color: wcOver ? '#cb4028' : '#25ad25' }}
+                style={{ color: wcOver ? MSG_INVALID : MSG_VALID }}
               >
                 {wcOver ? t.paragraph17 : `${wc}/${MAX_WORDS} ${t.paragraph18}`}
               </p>
 
-              <label htmlFor={`upload-${fieldId}`}>{cfg.uploadLabel}</label>
+              <label htmlFor={`upload-${fieldId}`}>
+                {cfg.uploadLabel}
+                <span className={styles.optionalTag}>{t.optional_suffix}</span>
+              </label>
               <div className={styles.fileSizeMessage} style={{ color: a.fileMessageColor }}>
                 {a.fileMessage}
               </div>
@@ -942,8 +957,18 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 type="file"
                 id={`upload-${fieldId}`}
                 name={list === 'personal' ? 'upload[]' : 'uploadOrg[]'}
-                accept=".pdf,.doc,.jpg,.png"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 onChange={handleFileChange(list, a.id)}
+                /* The attachment is optional, so there is no "required" state
+                   to show — only whether the chosen file is within the limit. */
+                className={
+                  a.file
+                    ? a.file.size <= MAX_FILE_SIZE_MB * 1024 * 1024
+                      ? styles.inputValid
+                      : styles.inputError
+                    : undefined
+                }
+                aria-invalid={a.file ? a.file.size > MAX_FILE_SIZE_MB * 1024 * 1024 : undefined}
               />
 
               {idx > 0 && (
@@ -1264,7 +1289,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         checked={specificAffiliation === 'alsaraa'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
-                          clearError('specificAffiliation')
+                          liveUpdate('specificAffiliation', e.target.value)
                         }}
                         required
                       />
@@ -1279,7 +1304,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         checked={specificAffiliation === 'tahamah'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
-                          clearError('specificAffiliation')
+                          liveUpdate('specificAffiliation', e.target.value)
                         }}
                         required
                       />

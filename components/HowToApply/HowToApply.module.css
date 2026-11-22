@@ -254,6 +254,13 @@
   outline-color: #46b26b;
 }
 
+/* Marks the one field on the form that is not required. */
+.applyForm .optionalTag {
+  font-weight: 400;
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
 /* Says why the submit button is disabled. Guidance, not an error — gold. */
 .applyForm .submitHint {
   color: #ffd86b;
