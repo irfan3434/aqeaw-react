@@ -278,3 +278,130 @@
   outline-offset: 3px;
   border-radius: 3px;
 }
+
+/* ===== User guide (expandable quick link) ===== */
+
+/* It is a button, but it has to read as one of the links around it. */
+.footerGuideToggle {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+/* The arrow each link already has doubles as the open/closed indicator:
+   pointing right when closed (mirrored to the left in Arabic by the rules
+   above), pointing down when open. A downward chevron is symmetrical, so one
+   rule covers both directions. The :hover variants are listed because the
+   existing hover rules would otherwise win on specificity. */
+.footerGuideToggle.footerGuideToggleOpen .footerLinkArrow,
+.footerGuideToggle.footerGuideToggleOpen:hover .footerLinkArrow,
+:global(html[lang='ar']) .footerGuideToggle.footerGuideToggleOpen .footerLinkArrow,
+:global(html[lang='ar']) .footerGuideToggle.footerGuideToggleOpen:hover .footerLinkArrow {
+  transform: rotate(90deg);
+}
+
+/* 0fr -> 1fr animates to the content's own height. max-height cannot do that
+   without guessing a number that later breaks when a third item is added. */
+.footerGuideWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.footerGuideWrapOpen {
+  grid-template-rows: 1fr;
+}
+
+.footerGuideInner {
+  overflow: hidden;
+}
+
+.footerGuideList {
+  list-style: none;
+  margin: 6px 0 0 0;
+  padding: 0;
+  /* inline-start follows the text direction, so the indent and the rail land
+     on the right in Arabic without a second rule. */
+  margin-inline-start: 7px;
+  padding-inline-start: 18px;
+  border-inline-start: 1px solid rgba(196, 162, 30, 0.25);
+}
+
+.footerGuideItem {
+  margin-top: 8px;
+}
+
+.footerGuideLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.88rem;
+  color: #9fb6cc;
+  text-align: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, gap 0.2s ease;
+}
+
+:global(html[lang='ar']) .footerGuideLink {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.footerGuideLink:hover {
+  color: #ffcb00;
+  gap: 11px;
+}
+
+:global(html[lang='ar']) .footerGuideLink:hover {
+  gap: 8px;
+}
+
+.footerGuideLink svg {
+  flex-shrink: 0;
+  color: #c4a21e;
+}
+
+.footerGuideToggle:focus-visible,
+.footerGuideLink:focus-visible {
+  outline: 2px solid #ffcb00;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 767px) {
+  .footerGuideToggle,
+  :global(html[lang='ar']) .footerGuideToggle {
+    justify-content: center;
+  }
+
+  /* The mobile footer is centred, so an indent rail would hang off to one
+     side of nothing. */
+  .footerGuideList {
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+    border-inline-start: none;
+  }
+
+  .footerGuideLink,
+  :global(html[lang='ar']) .footerGuideLink {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footerGuideWrap {
+    transition: none;
+  }
+}

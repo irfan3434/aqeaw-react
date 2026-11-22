@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import { useLanguage } from '../../lib/LanguageContext'
+import UserGuideModal from '../UserGuide/UserGuideModal'
+import { GUIDE_PDF_PATH, hasGuideDocument, hasGuideVideo } from '../../lib/userGuide'
 import styles from './Footer.module.css'
 
 const footerData = {
@@ -19,6 +22,11 @@ const footerData = {
         { label: 'FAQ',              href: '/FAQs' },
         { label: 'How to Apply',     href: '/Eligibility-Criteria' },
       ],
+      guide: {
+        label: 'User Guide',
+        doc:   'Guide Book (PDF)',
+        video: 'Guide Video',
+      },
     },
     col3: {
       heading: 'Contact Us',
@@ -41,8 +49,13 @@ const footerData = {
         { label: 'الصفحة الرئيسية', href: '/' },
         { label: 'عن الجائزة',       href: '/AboutAward' },
         { label: 'الأسئلة الشائعة',  href: '/FAQs' },
-        { label: 'كيفية التقديم',    href: '/HowToApply' },
+        { label: 'التقديم',    href: '/HowToApply' },
       ],
+      guide: {
+        label: 'دليل المستخدم',
+        doc:   'كتاب دليل المستخدم',
+        video: 'فيديو دليل المستخدم',
+      },
     },
     col3: {
       heading: 'اتصل بنا',
@@ -59,6 +72,13 @@ const footerData = {
 export default function Footer() {
   const { lang } = useLanguage()
   const data = footerData[lang]
+
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [videoOpen, setVideoOpen] = useState(false)
+
+  // Neither half configured yet means no entry at all, rather than a link
+  // that goes nowhere. See lib/userGuide.ts.
+  const showGuide = hasGuideDocument || hasGuideVideo
 
   return (
     <footer className={styles.footerWrapper}>
@@ -87,6 +107,65 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+
+            {/* User Guide — expands in place into the book and the video */}
+            {showGuide && (
+              <li className={styles.footerLinksItem}>
+                <button
+                  type="button"
+                  className={`${styles.footerLink} ${styles.footerGuideToggle} ${guideOpen ? styles.footerGuideToggleOpen : ''}`}
+                  aria-expanded={guideOpen}
+                  aria-controls="footer-user-guide"
+                  onClick={() => setGuideOpen((open) => !open)}
+                >
+                  <span className={styles.footerLinkArrow} aria-hidden="true">›</span>
+                  {data.col2.guide.label}
+                </button>
+
+                <div className={`${styles.footerGuideWrap} ${guideOpen ? styles.footerGuideWrapOpen : ''}`}>
+                  <div className={styles.footerGuideInner} inert={!guideOpen}>
+                    <ul id="footer-user-guide" className={styles.footerGuideList}>
+
+                      {hasGuideDocument && (
+                        <li className={styles.footerGuideItem}>
+                          <a
+                            href={GUIDE_PDF_PATH}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.footerGuideLink}
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
+                              <line x1="8" y1="13" x2="16" y2="13" />
+                              <line x1="8" y1="17" x2="13" y2="17" />
+                            </svg>
+                            {data.col2.guide.doc}
+                          </a>
+                        </li>
+                      )}
+
+                      {hasGuideVideo && (
+                        <li className={styles.footerGuideItem}>
+                          <button
+                            type="button"
+                            className={styles.footerGuideLink}
+                            onClick={() => setVideoOpen(true)}
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                              <circle cx="12" cy="12" r="10" />
+                              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                            </svg>
+                            {data.col2.guide.video}
+                          </button>
+                        </li>
+                      )}
+
+                    </ul>
+                  </div>
+                </div>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -141,6 +220,10 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {hasGuideVideo && (
+        <UserGuideModal open={videoOpen} onClose={() => setVideoOpen(false)} />
+      )}
 
     </footer>
   )
