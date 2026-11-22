@@ -353,6 +353,9 @@ export default function HowToApplyPage() {
   // One message per field, keyed by the name it is posted under so a 400 from
   // the server can be mapped straight back onto the field that caused it.
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  // Which fields the applicant has already left once. Nothing is marked wrong
+  // before that, so messages never appear mid-word on a first attempt.
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   // Bumped whenever a submit is rejected, to move focus to the first bad field.
   const [errorSeq, setErrorSeq] = useState(0)
 
@@ -436,51 +439,104 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
       return next
     })
 
-  const validateForm = (): Record<string, string> => {
-    const e: Record<string, string> = {}
-    const name = (k: string, v: string) => {
-      if (!isFilled(v)) e[k] = t.err_required
-      else if (!isValidName(v)) e[k] = t.err_name
-    }
-    const mail = (k: string, v: string) => {
-      if (!isFilled(v)) e[k] = t.err_required
-      else if (!isValidEmail(v)) e[k] = t.err_email
-    }
-    const tel = (k: string, v: string) => {
-      if (!isFilled(v)) e[k] = t.err_required
-      else if (!isValidPhone(v)) e[k] = t.err_phone
-    }
-    const age = (k: string, v: string) => {
-      if (!isFilled(v)) e[k] = t.err_required
-      else if (!isValidAge(v)) e[k] = t.err_age
-    }
-
-    if (formType === 'personal') {
-      if (userType === 'referral') {
-        name('referrerFullName', referrerFullName)
-        age('referrerAge', referrerAge)
-        mail('referrerEmail', referrerEmail)
-        tel('referrerPhone', referrerPhone)
-        if (!isFilled(nominationReason)) e.nominationReason = t.err_required
+  /** Store a message, or drop the entry entirely when the field is fine. */
+  const setFieldError = (key: string, message: string) =>
+    setFieldErrors((prev) => {
+      if (!message) {
+        if (!prev[key]) return prev
+        const next = { ...prev }
+        delete next[key]
+        return next
       }
-      name('fullName', fullName)
-      age('applicantAge', applicantAge)
-      mail('email', email)
-      tel('phone', phone)
-      if (tribeChecked && !specificAffiliation) e.specificAffiliation = t.err_required
-    } else {
-      if (!isFilled(organizationName)) e.organizationName = t.err_required
-      if (!isFilled(ownerName)) e.ownerName = t.err_required
-      mail('organizationEmail', organizationEmail)
-      tel('organizationNumber', organizationNumber)
-    }
-
-    const listKey = formType === 'personal' ? 'personal' : 'org'
-    activeAchievements.forEach((a, i) => {
-      if (!isFilled(a.title)) e[`${listKey}Title${i}`] = t.err_required
-      if (!isFilled(a.description)) e[`${listKey}Desc${i}`] = t.err_required
+      if (prev[key] === message) return prev
+      return { ...prev, [key]: message }
     })
 
+  /**
+   * One field's verdict: '' when it is fine, otherwise the message to show.
+   * Every path — typing, leaving the field, submitting — asks this same
+   * function, so the three can never disagree about what counts as valid.
+   */
+  const validateField = (key: string, value: string): string => {
+    if (!isFilled(value)) return t.err_required
+    if (key === 'fullName' || key === 'referrerFullName') {
+      return isValidName(value) ? '' : t.err_name
+    }
+    if (key === 'applicantAge' || key === 'referrerAge') {
+      return isValidAge(value) ? '' : t.err_age
+    }
+    if (key === 'email' || key === 'referrerEmail' || key === 'organizationEmail') {
+      return isValidEmail(value) ? '' : t.err_email
+    }
+    if (key === 'phone' || key === 'referrerPhone' || key === 'organizationNumber') {
+      return isValidPhone(value) ? '' : t.err_phone
+    }
+    return ''
+  }
+
+  /**
+   * Keep a field's message in step as it is typed in — but only once the
+   * applicant has left it, or tried to submit. Marking an email wrong while
+   * someone is still on the third character is just nagging; correcting it
+   * the moment they fix it is the useful half.
+   */
+  const liveUpdate = (key: string, value: string) => {
+    if (touched[key]) setFieldError(key, validateField(key, value))
+    else clearError(key)
+  }
+
+  const markTouched = (key: string, value: string) => () => {
+    setTouched((prev) => (prev[key] ? prev : { ...prev, [key]: true }))
+    setFieldError(key, validateField(key, value))
+  }
+
+  /** Visited, filled in, and passing — the state the green border means. */
+  const isFieldValid = (key: string, value: string) =>
+    Boolean(touched[key]) && isFilled(value) && !validateField(key, value)
+
+  /** Which fields this form actually submits, with their current values. */
+  const activeFields = (): Array<[string, string]> => {
+    const out: Array<[string, string]> = []
+    if (formType === 'personal') {
+      if (userType === 'referral') {
+        out.push(
+          ['referrerFullName', referrerFullName],
+          ['referrerAge', referrerAge],
+          ['referrerEmail', referrerEmail],
+          ['referrerPhone', referrerPhone],
+          ['nominationReason', nominationReason]
+        )
+      }
+      out.push(
+        ['fullName', fullName],
+        ['applicantAge', applicantAge],
+        ['email', email],
+        ['phone', phone]
+      )
+    } else {
+      out.push(
+        ['organizationName', organizationName],
+        ['ownerName', ownerName],
+        ['organizationEmail', organizationEmail],
+        ['organizationNumber', organizationNumber]
+      )
+    }
+    const listKey = formType === 'personal' ? 'personal' : 'org'
+    activeAchievements.forEach((a, i) => {
+      out.push([`${listKey}Title${i}`, a.title], [`${listKey}Desc${i}`, a.description])
+    })
+    return out
+  }
+
+  const validateForm = (): Record<string, string> => {
+    const e: Record<string, string> = {}
+    for (const [key, value] of activeFields()) {
+      const message = validateField(key, value)
+      if (message) e[key] = message
+    }
+    if (formType === 'personal' && tribeChecked && !specificAffiliation) {
+      e.specificAffiliation = t.err_required
+    }
     return e
   }
 
@@ -494,6 +550,7 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
     setNominationMessage({ text: '', color: '#f7f7f7' })
     // Messages are held in the previous language; clear rather than translate.
     setFieldErrors({})
+    setTouched({})
   }
 
   // ---------- Fade-in fieldsets via IntersectionObserver ----------
@@ -608,8 +665,9 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
    */
   const handlePhoneChange =
     (set: (v: string) => void, key: string) => (e: ChangeEvent<HTMLInputElement>) => {
-      set(sanitizePhoneInput(e.target.value))
-      clearError(key)
+      const value = sanitizePhoneInput(e.target.value)
+      set(value)
+      liveUpdate(key, value)
     }
 
   /**
@@ -618,15 +676,16 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
    */
   const handleAgeChange =
     (set: (v: string) => void, key: string) => (e: ChangeEvent<HTMLInputElement>) => {
-      set(e.target.value.replace(/\D/g, '').slice(0, 3))
-      clearError(key)
+      const value = e.target.value.replace(/\D/g, '').slice(0, 3)
+      set(value)
+      liveUpdate(key, value)
     }
 
   const handleTextChange =
     (set: (v: string) => void, key: string) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       set(e.target.value)
-      clearError(key)
+      liveUpdate(key, e.target.value)
     }
 
   const addAchievement = (list: 'personal' | 'org') => {
@@ -660,6 +719,9 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
     // single alert that named no field at all.
     const errors = validateForm()
     setFieldErrors(errors)
+    // From here on every field tracks itself as it is edited, so a message
+    // clears the moment its field is put right rather than on the next click.
+    setTouched(Object.fromEntries(activeFields().map(([key]) => [key, true])))
     if (Object.keys(errors).length) {
       setErrorSeq((n) => n + 1)
       return
@@ -777,12 +839,27 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
   }
 
   // ---------- Field error rendering ----------
-  const errorProps = (
-    key: string
-  ): { 'aria-invalid'?: boolean; 'aria-describedby'?: string; className?: string } =>
-    fieldErrors[key]
-      ? { 'aria-invalid': true, 'aria-describedby': `${key}-error`, className: styles.inputError }
-      : {}
+  /**
+   * Validation state for one field: the blur handler that starts live
+   * checking, plus the red or green border. The border follows our own rule,
+   * not the browser's — `type="email"` considers "a@b" perfectly valid, so
+   * native styling would show green for an address we go on to reject.
+   */
+  const fieldProps = (key: string, value: string) => {
+    const message = fieldErrors[key]
+    return {
+      onBlur: markTouched(key, value),
+      ...(message
+        ? {
+            'aria-invalid': true as const,
+            'aria-describedby': `${key}-error`,
+            className: styles.inputError,
+          }
+        : isFieldValid(key, value)
+          ? { className: styles.inputValid }
+          : {}),
+    }
+  }
 
   const errorText = (key: string) =>
     fieldErrors[key] ? (
@@ -832,7 +909,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   clearError(`${list}Title${idx}`)
                 }}
                 required
-                {...errorProps(`${list}Title${idx}`)}
+                {...fieldProps(`${list}Title${idx}`, a.title)}
               />
               {errorText(`${list}Title${idx}`)}
 
@@ -847,7 +924,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   clearError(`${list}Desc${idx}`)
                 }}
                 required
-                {...errorProps(`${list}Desc${idx}`)}
+                {...fieldProps(`${list}Desc${idx}`, a.description)}
               />
               {errorText(`${list}Desc${idx}`)}
               <p
@@ -1001,7 +1078,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={referrerFullName}
                   onChange={handleTextChange(setReferrerFullName, 'referrerFullName')}
                   required={userType === 'referral'}
-                  {...errorProps('referrerFullName')}
+                  {...fieldProps('referrerFullName', referrerFullName)}
                 />
                 {errorText('referrerFullName')}
 
@@ -1015,7 +1092,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={referrerAge}
                   onChange={handleAgeChange(setReferrerAge, 'referrerAge')}
                   required={userType === 'referral'}
-                  {...errorProps('referrerAge')}
+                  {...fieldProps('referrerAge', referrerAge)}
                 />
                 {errorText('referrerAge')}
 
@@ -1039,7 +1116,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={referrerEmail}
                   onChange={handleTextChange(setReferrerEmail, 'referrerEmail')}
                   required={userType === 'referral'}
-                  {...errorProps('referrerEmail')}
+                  {...fieldProps('referrerEmail', referrerEmail)}
                 />
                 {errorText('referrerEmail')}
 
@@ -1052,7 +1129,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={referrerPhone}
                   onChange={handlePhoneChange(setReferrerPhone, 'referrerPhone')}
                   required={userType === 'referral'}
-                  {...errorProps('referrerPhone')}
+                  {...fieldProps('referrerPhone', referrerPhone)}
                 />
                 {errorText('referrerPhone')}
 
@@ -1063,7 +1140,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={nominationReason}
                   onChange={handleNominationChange}
                   required={userType === 'referral'}
-                  {...errorProps('nominationReason')}
+                  {...fieldProps('nominationReason', nominationReason)}
                 />
                 {errorText('nominationReason')}
                 <p
@@ -1087,7 +1164,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={fullName}
                   onChange={handleTextChange(setFullName, 'fullName')}
                   required
-                  {...errorProps('fullName')}
+                  {...fieldProps('fullName', fullName)}
                 />
                 {errorText('fullName')}
 
@@ -1101,7 +1178,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={applicantAge}
                   onChange={handleAgeChange(setApplicantAge, 'applicantAge')}
                   required
-                  {...errorProps('applicantAge')}
+                  {...fieldProps('applicantAge', applicantAge)}
                 />
                 {errorText('applicantAge')}
 
@@ -1126,7 +1203,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={email}
                   onChange={handleTextChange(setEmail, 'email')}
                   required
-                  {...errorProps('email')}
+                  {...fieldProps('email', email)}
                 />
                 {errorText('email')}
 
@@ -1140,7 +1217,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={phone}
                   onChange={handlePhoneChange(setPhone, 'phone')}
                   required
-                  {...errorProps('phone')}
+                  {...fieldProps('phone', phone)}
                 />
                 {errorText('phone')}
 
@@ -1240,7 +1317,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={organizationName}
                   onChange={handleTextChange(setOrganizationName, 'organizationName')}
                   required
-                  {...errorProps('organizationName')}
+                  {...fieldProps('organizationName', organizationName)}
                 />
                 {errorText('organizationName')}
 
@@ -1252,7 +1329,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={ownerName}
                   onChange={handleTextChange(setOwnerName, 'ownerName')}
                   required
-                  {...errorProps('ownerName')}
+                  {...fieldProps('ownerName', ownerName)}
                 />
                 {errorText('ownerName')}
 
@@ -1265,7 +1342,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={organizationEmail}
                   onChange={handleTextChange(setOrganizationEmail, 'organizationEmail')}
                   required
-                  {...errorProps('organizationEmail')}
+                  {...fieldProps('organizationEmail', organizationEmail)}
                 />
                 {errorText('organizationEmail')}
 
@@ -1278,7 +1355,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={organizationNumber}
                   onChange={handlePhoneChange(setOrganizationNumber, 'organizationNumber')}
                   required
-                  {...errorProps('organizationNumber')}
+                  {...fieldProps('organizationNumber', organizationNumber)}
                 />
                 {errorText('organizationNumber')}
               </fieldset>

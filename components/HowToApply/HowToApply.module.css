@@ -246,6 +246,14 @@
   outline-color: #ff6b57;
 }
 
+/* Checked and passing. The colour follows our own rule, not the browser's:
+   `type="email"` treats "a@b" as valid, so native :valid styling would show
+   green for an address the form goes on to reject. */
+.applyForm .inputValid {
+  border: 2px solid #46b26b !important;
+  outline-color: #46b26b;
+}
+
 /* Says why the submit button is disabled. Guidance, not an error — gold. */
 .applyForm .submitHint {
   color: #ffd86b;
