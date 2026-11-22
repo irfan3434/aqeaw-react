@@ -974,7 +974,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         }}
                         required
                       />
-                      {t.paragraph5}
+                      {t.paragraph5} 
                     </label>
                     <label htmlFor="tahamah">
                       <input
