@@ -21,7 +21,7 @@ export const STREAM_CUSTOMER_SUBDOMAIN = 'customer-esndw3dpthbsv619.cloudflarest
  */
 export const STREAM_VIDEO_UID = 'f5cd7c8e9fe6202e705ab388f9d98233'
 
-/**
+/** 
  * The written guide, as a path relative to public/. Fill this in only once the
  * file is actually sitting there, or the footer will link to a 404.
  * Putting public/docs/user-guide.pdf in place means: '/docs/user-guide.pdf'
