@@ -244,7 +244,7 @@ const content: Record<'en' | 'ar', Content> = {
     paragraph4: ':اختر الانتماء',
     paragraph5: 'السرة',
     paragraph6: 'تهامة',
-    paragraph15: ' بلقرن محافظة بلقرن ',
+    paragraph15: 'بلقرن و محافظة بلقرن',
 
     paragraph70: 'المبادئ التوجيهية اللازمة:',
     paragraph71: 'يحق للمترشح أن يقدم أهم أعماله المميزة، وبحد أقصى 4 أعمال فقط.',

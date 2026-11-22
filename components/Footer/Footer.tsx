@@ -41,7 +41,7 @@ const footerData = {
         { label: 'الصفحة الرئيسية', href: '/' },
         { label: 'عن الجائزة',       href: '/AboutAward' },
         { label: 'الأسئلة الشائعة',  href: '/FAQs' },
-        { label: 'كيفية التقديم',    href: '/Eligibility-Criteria' },
+        { label: 'كيفية التقديم',    href: '/HowToApply' },
       ],
     },
     col3: {
