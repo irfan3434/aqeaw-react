@@ -412,6 +412,23 @@ a.ctInfoLine:hover { color: #ffcb00; }
   color: #f87171;
 }
 
+/* A field's own message, under the field it belongs to. */
+.ctFieldError {
+  margin: 8px 2px 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #f87171;
+  text-align: start;
+}
+
+/* The invalid field itself, so the message is not the only signal. */
+.ctInput[aria-invalid='true'],
+.ctTextarea[aria-invalid='true'] {
+  border-color: rgba(248, 113, 113, 0.75);
+  background: rgba(239, 68, 68, 0.06);
+}
+
 /* Submit button */
 .ctSubmit {
   display: flex;
@@ -434,6 +451,12 @@ a.ctInfoLine:hover { color: #ffcb00; }
               transform 0.3s ease,
               box-shadow 0.3s ease;
   box-shadow: 0 6px 24px rgba(196,162,30,0.35);
+}
+
+.ctSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
 }
 
 .ctSubmit:hover {

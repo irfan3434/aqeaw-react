@@ -83,7 +83,14 @@ export async function sendSubmissionNotification(doc, type) {
     const { subject, html } = buildSubmissionEmail(doc, type)
     const attachments = await buildAttachments(doc.achievements || [])
 
-    const info = await t.sendMail({ from, to, subject, html, attachments })
+    const info = await t.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      attachments,
+      headers: { 'X-AQEAW-Type': 'application' },
+    })
     // Recipient and accepted/rejected lists logged so a silent non-delivery can
     // be told apart from the server never having tried.
     console.log(
@@ -220,6 +227,71 @@ export async function sendLoginCode(to, name, code) {
   } catch (err) {
     console.error('[mailer] Failed to send login code:', err.message)
     return false
+  }
+}
+
+/**
+ * Forward a message from the public Contact Us form to the award inbox.
+ *
+ * The visitor's address goes in Reply-To, never in From: sending as them
+ * would fail SPF at most providers and land the message in spam. From stays
+ * the site's own authenticated address, so a reply reaches the visitor with
+ * one click and the message itself is deliverable.
+ *
+ * Returns { ok } so the route can tell the visitor the truth — the form used
+ * to report success unconditionally, having sent nothing at all.
+ */
+export async function sendContactMessage({ name, email, message }) {
+  const t = getTransporter()
+  if (!t) return { ok: false, error: 'Email is not configured on the server.' }
+
+  const to = (process.env.NOTIFY_TO || process.env.SMTP_USER || '').trim()
+  if (!to) {
+    console.error('[mailer] No contact recipient: set NOTIFY_TO (or SMTP_USER).')
+    return { ok: false, error: 'No recipient configured.' }
+  }
+  const from = (process.env.SMTP_FROM || process.env.SMTP_USER || '').trim()
+
+  const safeName = escapeHtml(name)
+  const safeEmail = escapeHtml(email)
+  // Line breaks the visitor typed are the only formatting worth keeping.
+  const safeMessage = escapeHtml(message).replace(/\r?\n/g, '<br>')
+
+  const html = `
+  <div style="font-family:Tahoma,Arial,sans-serif;max-width:640px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">
+    <h2 style="color:#1e3a5f;margin:0 0 16px">رسالة جديدة من نموذج اتصل بنا / New message from the Contact Us form</h2>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+      <tr>
+        <td style="border:1px solid #ddd;padding:8px;font-weight:bold;background:#f4f4f4;width:35%">الاسم / Name</td>
+        <td style="border:1px solid #ddd;padding:8px">${safeName}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #ddd;padding:8px;font-weight:bold;background:#f4f4f4">البريد / Email</td>
+        <td style="border:1px solid #ddd;padding:8px" dir="ltr">${safeEmail}</td>
+      </tr>
+    </table>
+    <h3 style="color:#1e3a5f;margin:0 0 8px">الرسالة / Message</h3>
+    <div style="border:1px solid #ddd;padding:12px;border-radius:8px;background:#fafafa;white-space:normal">${safeMessage}</div>
+    <p style="color:#6b7280;font-size:13px;margin-top:16px">اضغط «رد» للرد على المُرسِل مباشرة. / Hit Reply to answer the sender directly.</p>
+  </div>`
+
+  try {
+    const info = await t.sendMail({
+      from,
+      to,
+      replyTo: `${name} <${email}>`,
+      // Machine-readable counterpart to the subject tag, for clients and
+      // scripts that can filter on headers.
+      headers: { 'X-AQEAW-Type': 'contact' },
+      subject: `[AQEAW CONTACT] Message from ${String(name).slice(0, 60)}`,
+      html,
+      text: `New message from the Contact Us form\n\nName: ${name}\nEmail: ${email}\n\n${message}`,
+    })
+    console.log(`[mailer] Contact message sent to ${to}: ${info.response}`)
+    return { ok: true }
+  } catch (err) {
+    console.error('[mailer] Failed to send contact message:', err.message)
+    return { ok: false, error: 'The message could not be sent.' }
   }
 }
 

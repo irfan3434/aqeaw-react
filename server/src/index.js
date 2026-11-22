@@ -8,6 +8,7 @@ import adminRouter from './routes/admin.js'
 import authRouter from './routes/auth.js'
 import judgeRouter from './routes/judge.js'
 import profileCardsRouter from './routes/profileCards.js'
+import contactRouter from './routes/contact.js'
 import { User } from './models/User.js'
 import { hashPassword } from './services/passwords.js'
 import { notFound, errorHandler } from './middleware/errorHandler.js'
@@ -118,6 +119,7 @@ app.use(express.json({ limit: '1mb' }))
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }))
 
 app.use('/', applicationsRouter)
+app.use('/', contactRouter)
 app.use('/', authRouter) // must come before adminRouter (login is public)
 app.use('/', judgeRouter)
 app.use('/', profileCardsRouter) // before adminRouter; has its own public + admin routes

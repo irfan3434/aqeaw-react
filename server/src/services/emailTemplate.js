@@ -121,7 +121,10 @@ export function buildSubmissionEmail(doc, type) {
       ? doc.fullName || 'Unknown applicant'
       : doc.organizationName || 'Unknown organization'
 
-  const subject = `New ${type === 'personal' ? 'Personal' : 'Organization'} Application — ${who}`
+  // The leading tag is what a mail rule can sort on. Both kinds of mail land
+  // in the same inbox (NOTIFY_TO), so without it an application and a
+  // visitor's question look alike in a subject list.
+  const subject = `[AQEAW APPLICATION] New ${type === 'personal' ? 'Personal' : 'Organization'} Application — ${who}`
 
   const html = `
     <!DOCTYPE html>

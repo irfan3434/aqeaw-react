@@ -1,8 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useLanguage } from '../../lib/LanguageContext'
 import styles from './ContactUs.module.css'
+import { apiBase } from '../../lib/apiBase'
+import { isValidEmail, isValidName, isFilled } from '../../lib/formValidation'
+
+const MIN_MESSAGE = 10
 
 const content = {
   en: {
@@ -25,7 +29,13 @@ const content = {
     placeholder2: 'Enter your email',
     placeholder3: 'Write your message',
     successMsg: (name: string) => `Thank you, ${name}. Your message has been sent successfully!`,
-    errorMsg: 'Please fill out all fields before submitting.',
+    errorMsg: 'Please correct the highlighted fields before submitting.',
+    err_required: 'This field is required.',
+    err_name: 'Enter your name using letters only.',
+    err_email: 'Enter a valid email address, for example name@example.com',
+    err_message: `Please write a little more — at least ${MIN_MESSAGE} characters.`,
+    sending: 'Sending…',
+    sendFailed: 'Your message could not be sent. Please try again, or email us at info@aqeaw.com',
   },
   ar: {
     heading1: 'اتصل بنا',
@@ -47,7 +57,13 @@ const content = {
     placeholder2: 'أدخل بريدك الإلكتروني',
     placeholder3: 'اكتب رسالتك',
     successMsg: (name: string) => `شكراً لك، ${name}. تم إرسال رسالتك بنجاح!`,
-    errorMsg: 'يرجى ملء جميع الحقول قبل الإرسال.',
+    errorMsg: 'يرجى تصحيح الحقول المظللة قبل الإرسال.',
+    err_required: 'هذا الحقل مطلوب.',
+    err_name: 'أدخل اسمك بالحروف فقط.',
+    err_email: 'أدخل بريدًا إلكترونيًا صحيحًا.',
+    err_message: `اكتب رسالة أطول قليلًا — ${MIN_MESSAGE} أحرف على الأقل.`,
+    sending: '... جارٍ الإرسال',
+    sendFailed: 'تعذّر إرسال رسالتك. حاول مرة أخرى، أو راسلنا على البريد الموضّح أعلاه.',
   },
 }
 
@@ -59,20 +75,133 @@ export default function ContactUs() {
   const [name,    setName]    = useState('')
   const [email,   setEmail]   = useState('')
   const [message, setMessage] = useState('')
-  const [status,  setStatus]  = useState<'idle' | 'success' | 'error'>('idle')
+  const [status,  setStatus]  = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [focused, setFocused] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  // The name is cleared on success, so the thank-you line has to keep its own
+  // copy — otherwise it renders "Thank you, —".
+  const [sentTo, setSentTo] = useState('')
+  const [sendError, setSendError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const sendingRef = useRef(false)
+
+  const values: Record<string, string> = { name, email, message }
+
+  /** One field's verdict: '' when it is fine, otherwise the message to show. */
+  const validateField = (key: string, value: string): string => {
+    if (!isFilled(value)) return t.err_required
+    if (key === 'name') return isValidName(value) ? '' : t.err_name
+    if (key === 'email') return isValidEmail(value) ? '' : t.err_email
+    if (key === 'message') return value.trim().length >= MIN_MESSAGE ? '' : t.err_message
+    return ''
+  }
+
+  const setFieldError = (key: string, message: string) =>
+    setFieldErrors((prev) => {
+      if (!message) {
+        if (!prev[key]) return prev
+        const next = { ...prev }
+        delete next[key]
+        return next
+      }
+      if (prev[key] === message) return prev
+      return { ...prev, [key]: message }
+    })
+
+  /** Live once the field has been left, so a message clears as it is fixed. */
+  const change =
+    (set: (v: string) => void, key: string) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = e.target.value
+      set(value)
+      if (touched[key]) setFieldError(key, validateField(key, value))
+      else setFieldError(key, '')
+    }
+
+  const leave = (key: string) => () => {
+    setFocused(null)
+    setTouched((prev) => (prev[key] ? prev : { ...prev, [key]: true }))
+    setFieldError(key, validateField(key, values[key]))
+  }
+
+  const fieldState = (key: string) => ({
+    onFocus: () => setFocused(key),
+    onBlur: leave(key),
+    'aria-invalid': fieldErrors[key] ? true : undefined,
+    'aria-describedby': fieldErrors[key] ? `ct-${key}-error` : undefined,
+  })
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (name && email && message) {
-      setStatus('success')
-      setName(''); setEmail(''); setMessage('')
-      setTimeout(() => setStatus('idle'), 5000)
-    } else {
+    if (sendingRef.current) return
+
+    const errors: Record<string, string> = {}
+    for (const key of ['name', 'email', 'message']) {
+      const message = validateField(key, values[key])
+      if (message) errors[key] = message
+    }
+    setFieldErrors(errors)
+    setTouched({ name: true, email: true, message: true })
+    if (Object.keys(errors).length) {
+      setSendError('')
       setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      return
+    }
+
+    sendingRef.current = true
+    setStatus('sending')
+    setSendError('')
+    try {
+      const res = await fetch(`${apiBase()}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      })
+      if (res.ok) {
+        setSentTo(name)
+        setStatus('success')
+        setName(''); setEmail(''); setMessage('')
+        setTouched({})
+        setFieldErrors({})
+        return
+      }
+      // The API names the fields it rejected, and says why when it is not a
+      // field problem at all (rate limited, mail server down).
+      let reason = ''
+      let bad: string[] = []
+      try {
+        const data = (await res.json()) as { error?: unknown; fields?: unknown }
+        if (typeof data.error === 'string') reason = data.error
+        if (Array.isArray(data.fields)) {
+          bad = data.fields.filter((x): x is string => typeof x === 'string')
+        }
+      } catch {
+        /* not JSON — a proxy or gateway error */
+      }
+      if (bad.length) {
+        setFieldErrors(Object.fromEntries(bad.map((k) => [k, validateField(k, values[k]) || t.err_required])))
+        setSendError('')
+      } else {
+        setSendError(reason || t.sendFailed)
+      }
+      setStatus('error')
+    } catch (err) {
+      // Offline, DNS, CORS — nothing the visitor can act on beyond retrying.
+      console.error('[contact]', err)
+      setSendError(t.sendFailed)
+      setStatus('error')
+    } finally {
+      sendingRef.current = false
     }
   }
+
+  const fieldError = (key: string) =>
+    fieldErrors[key] ? (
+      <p className={styles.ctFieldError} id={`ct-${key}-error`} role="alert">
+        {fieldErrors[key]}
+      </p>
+    ) : null
 
   const infoCards = [
     {
@@ -202,12 +331,12 @@ export default function ContactUs() {
                     className={styles.ctInput}
                     placeholder={t.placeholder1}
                     value={name}
-                    onChange={e => setName(e.target.value)}
-                    onFocus={() => setFocused('name')}
-                    onBlur={() => setFocused(null)}
+                    onChange={change(setName, 'name')}
                     required
+                    {...fieldState('name')}
                   />
                 </div>
+                {fieldError('name')}
               </div>
 
               <div className={`${styles.ctField} ${focused === 'email' ? styles.ctFieldFocused : ''}`}>
@@ -223,13 +352,15 @@ export default function ContactUs() {
                     className={styles.ctInput}
                     placeholder={t.placeholder2}
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    onFocus={() => setFocused('email')}
-                    onBlur={() => setFocused(null)}
+                    onChange={change(setEmail, 'email')}
                     required
                     dir="ltr"
+                    inputMode="email"
+                    autoComplete="email"
+                    {...fieldState('email')}
                   />
                 </div>
+                {fieldError('email')}
               </div>
 
               <div className={`${styles.ctField} ${focused === 'message' ? styles.ctFieldFocused : ''}`}>
@@ -244,12 +375,13 @@ export default function ContactUs() {
                     placeholder={t.placeholder3}
                     rows={5}
                     value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    onFocus={() => setFocused('message')}
-                    onBlur={() => setFocused(null)}
+                    onChange={change(setMessage, 'message')}
                     required
+                    maxLength={5000}
+                    {...fieldState('message')}
                   />
                 </div>
+                {fieldError('message')}
               </div>
 
               {/* Status messages */}
@@ -258,7 +390,7 @@ export default function ContactUs() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
-                  {t.successMsg(name || '—')}
+                  {t.successMsg(sentTo || '—')}
                 </div>
               )}
               {status === 'error' && (
@@ -268,12 +400,17 @@ export default function ContactUs() {
                     <line x1="12" y1="8" x2="12" y2="12"/>
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  {t.errorMsg}
+                  {sendError || t.errorMsg}
                 </div>
               )}
 
-              <button type="submit" className={styles.ctSubmit}>
-                <span>{t.paragraph10}</span>
+              <button
+                type="submit"
+                className={styles.ctSubmit}
+                disabled={status === 'sending'}
+                aria-busy={status === 'sending'}
+              >
+                <span>{status === 'sending' ? t.sending : t.paragraph10}</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="5" y1="12" x2="19" y2="12"/>
                   <polyline points="12 5 19 12 12 19"/>
