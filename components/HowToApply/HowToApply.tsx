@@ -25,6 +25,14 @@ import styles from './HowToApply.module.css'
 // apiBase() strips a trailing slash and, when the configured URL is
 // localhost but the page was opened from another host, retargets it there.
 import { apiBase } from '../../lib/apiBase'
+import {
+  isValidEmail,
+  isValidPhone,
+  isValidAge,
+  isValidName,
+  isFilled,
+  sanitizePhoneInput,
+} from '../../lib/formValidation'
 
 // ---------- Constants ----------
 const MAX_WORDS = 400
@@ -131,6 +139,15 @@ interface Content {
   // Local extras (not in your JSON but needed by the UI)
   required_field_suffix: string
   submitting: string
+  err_required: string
+  err_email: string
+  err_phone: string
+  err_age: string
+  err_name: string
+  nda_hint: string
+  blocked_words: string
+  blocked_file: string
+  fix_errors: string
   alert_required: string
   alert_success: string
   alert_failure: string
@@ -207,6 +224,16 @@ const content: Record<'en' | 'ar', Content> = {
 
     required_field_suffix: ' (This field is required)',
     submitting: 'Submitting…',
+    err_required: 'This field is required.',
+    err_email: 'Enter a valid email address, for example name@example.com',
+    err_phone: 'Enter a valid phone number — digits only, 9 to 15 of them. For example 0501234567',
+    err_age: 'Enter an age between 1 and 120.',
+    err_name: 'Enter the full name using letters only.',
+    nda_hint:
+      'Tick this box to enable the Submit Application button. You cannot submit until you confirm you have read the agreement.',
+    blocked_words: 'One of your achievement descriptions is over the word limit.',
+    blocked_file: 'One of your attachments is over the size limit.',
+    fix_errors: 'Please correct the highlighted fields above.',
     alert_required: 'Please fill out all required fields.',
     alert_success: 'Application submitted successfully.',
     alert_failure: 'Submission failed. Please try again.',
@@ -281,6 +308,16 @@ const content: Record<'en' | 'ar', Content> = {
 
     required_field_suffix: ' (هذا الحقل مطلوب)',
     submitting: '... جاري الإرسال',
+    err_required: 'هذا الحقل مطلوب.',
+    err_email: 'أدخل بريدًا إلكترونيًا صحيحًا.',
+    err_phone: 'أدخل رقم جوال صحيحًا — أرقام فقط، من 9 إلى 15 رقمًا.',
+    err_age: 'أدخل عمرًا بين 1 و 120.',
+    err_name: 'أدخل الاسم كاملًا بالحروف فقط.',
+    nda_hint:
+      'فعّل هذا المربع ليصبح زر «تقديم الطلب» متاحًا. لا يمكن إرسال الطلب قبل تأكيد قراءة الاتفاقية.',
+    blocked_words: 'أحد أوصاف الإنجازات تجاوز الحد المسموح من الكلمات.',
+    blocked_file: 'أحد المرفقات تجاوز الحجم المسموح.',
+    fix_errors: 'الرجاء تصحيح الحقول المظللة أعلاه.',
     alert_required: 'الرجاء تعبئة جميع الحقول المطلوبة.',
     alert_success: 'تم إرسال الطلب بنجاح.',
     alert_failure: 'فشل الإرسال. حاول مرة أخرى.',
@@ -312,7 +349,12 @@ export default function HowToApplyPage() {
   const [phone, setPhone] = useState('')
   const [tribeChecked, setTribeChecked] = useState(false)
   const [specificAffiliation, setSpecificAffiliation] = useState('')
-  const [affiliationError, setAffiliationError] = useState(false)
+
+  // One message per field, keyed by the name it is posted under so a 400 from
+  // the server can be mapped straight back onto the field that caused it.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  // Bumped whenever a submit is rejected, to move focus to the first bad field.
+  const [errorSeq, setErrorSeq] = useState(0)
 
   // Referrer
   const [referrerFullName, setReferrerFullName] = useState('')
@@ -352,18 +394,95 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   const submittingRef = useRef(false)
 
   // ---------- Submit-button enable logic ----------
-  const isWordCountValid = useMemo(() => {
-    const all = [...achievements, ...orgAchievements]
-    return all.every((a) => countWords(a.description) <= MAX_WORDS)
-  }, [achievements, orgAchievements])
+  // Only the form actually being filled in. Checking both lists meant an
+  // over-long description typed into the Individuals form kept the button
+  // disabled after switching to Organization — with the offending field no
+  // longer on screen, and nothing saying why.
+  const activeAchievements = formType === 'personal' ? achievements : orgAchievements
 
-  const isFileSizeValid = useMemo(() => {
-    const all = [...achievements, ...orgAchievements]
-    return all.every((a) => !a.file || a.file.size <= MAX_FILE_SIZE_MB * 1024 * 1024)
-  }, [achievements, orgAchievements])
+  const isWordCountValid = useMemo(
+    () => activeAchievements.every((a) => countWords(a.description) <= MAX_WORDS),
+    [activeAchievements]
+  )
+
+  const isFileSizeValid = useMemo(
+    () => activeAchievements.every((a) => !a.file || a.file.size <= MAX_FILE_SIZE_MB * 1024 * 1024),
+    [activeAchievements]
+  )
 
   const isSubmitEnabled =
     ndaChecked && isWordCountValid && isFileSizeValid && !isSubmitting && !submitSuccess
+
+  /**
+   * Why the button is greyed out, in the applicant's words.
+   *
+   * Without this, someone who filled in the whole form and never noticed the
+   * NDA tickbox sees a dead button and concludes the site is broken.
+   */
+  const blockedReason = !ndaChecked
+    ? t.nda_hint
+    : !isWordCountValid
+      ? t.blocked_words
+      : !isFileSizeValid
+        ? t.blocked_file
+        : ''
+
+  // ---------- Per-field validation ----------
+  const clearError = (name: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev
+      const next = { ...prev }
+      delete next[name]
+      return next
+    })
+
+  const validateForm = (): Record<string, string> => {
+    const e: Record<string, string> = {}
+    const name = (k: string, v: string) => {
+      if (!isFilled(v)) e[k] = t.err_required
+      else if (!isValidName(v)) e[k] = t.err_name
+    }
+    const mail = (k: string, v: string) => {
+      if (!isFilled(v)) e[k] = t.err_required
+      else if (!isValidEmail(v)) e[k] = t.err_email
+    }
+    const tel = (k: string, v: string) => {
+      if (!isFilled(v)) e[k] = t.err_required
+      else if (!isValidPhone(v)) e[k] = t.err_phone
+    }
+    const age = (k: string, v: string) => {
+      if (!isFilled(v)) e[k] = t.err_required
+      else if (!isValidAge(v)) e[k] = t.err_age
+    }
+
+    if (formType === 'personal') {
+      if (userType === 'referral') {
+        name('referrerFullName', referrerFullName)
+        age('referrerAge', referrerAge)
+        mail('referrerEmail', referrerEmail)
+        tel('referrerPhone', referrerPhone)
+        if (!isFilled(nominationReason)) e.nominationReason = t.err_required
+      }
+      name('fullName', fullName)
+      age('applicantAge', applicantAge)
+      mail('email', email)
+      tel('phone', phone)
+      if (tribeChecked && !specificAffiliation) e.specificAffiliation = t.err_required
+    } else {
+      if (!isFilled(organizationName)) e.organizationName = t.err_required
+      if (!isFilled(ownerName)) e.ownerName = t.err_required
+      mail('organizationEmail', organizationEmail)
+      tel('organizationNumber', organizationNumber)
+    }
+
+    const listKey = formType === 'personal' ? 'personal' : 'org'
+    activeAchievements.forEach((a, i) => {
+      if (!isFilled(a.title)) e[`${listKey}Title${i}`] = t.err_required
+      if (!isFilled(a.description)) e[`${listKey}Desc${i}`] = t.err_required
+    })
+
+    return e
+  }
 
   // ---------- Reset transient UI state on language flip ----------
   // React's documented "adjust state when a prop changes" pattern: compare
@@ -373,7 +492,8 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   if (prevLang !== lang) {
     setPrevLang(lang)
     setNominationMessage({ text: '', color: '#f7f7f7' })
-    setAffiliationError(false)
+    // Messages are held in the previous language; clear rather than translate.
+    setFieldErrors({})
   }
 
   // ---------- Fade-in fieldsets via IntersectionObserver ----------
@@ -397,6 +517,16 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
     return () => observer.disconnect()
   }, [achievements.length, orgAchievements.length, formType, userType])
 
+  // ---------- Move to the first field that needs attention ----------
+  // Runs after the render that paints the messages, so the element exists.
+  useEffect(() => {
+    if (!errorSeq) return
+    const el = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.focus({ preventScroll: true })
+  }, [errorSeq])
+
   // ---------- Esc closes NDA modal ----------
   useEffect(() => {
     if (!ndaModalOpen) return
@@ -410,6 +540,7 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
   // ---------- Handlers ----------
   const handleNominationChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
+    clearError('nominationReason')
     const wordCount = countWords(value)
     if (wordCount <= MAX_NOMINATION_WORDS) {
       setNominationReason(value)
@@ -470,6 +601,34 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       })
     }
 
+  /**
+   * Phone fields keep digits and the separators people type; everything else
+   * is dropped as it is typed. `type="tel"` does not restrict input at all, so
+   * without this a phone number could be — and was — pure letters.
+   */
+  const handlePhoneChange =
+    (set: (v: string) => void, key: string) => (e: ChangeEvent<HTMLInputElement>) => {
+      set(sanitizePhoneInput(e.target.value))
+      clearError(key)
+    }
+
+  /**
+   * `type="number"` also accepts "e", "E", "+" and "-" for scientific
+   * notation, so "1e5" can sit in an age box looking like a number.
+   */
+  const handleAgeChange =
+    (set: (v: string) => void, key: string) => (e: ChangeEvent<HTMLInputElement>) => {
+      set(e.target.value.replace(/\D/g, '').slice(0, 3))
+      clearError(key)
+    }
+
+  const handleTextChange =
+    (set: (v: string) => void, key: string) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      set(e.target.value)
+      clearError(key)
+    }
+
   const addAchievement = (list: 'personal' | 'org') => {
     const setter = list === 'personal' ? setAchievements : setOrgAchievements
     const current = list === 'personal' ? achievements : orgAchievements
@@ -484,7 +643,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
     setTribeChecked(checked)
     if (!checked) {
       setSpecificAffiliation('')
-      setAffiliationError(false)
+      clearError('specificAffiliation')
     }
   }
 
@@ -492,32 +651,17 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (formType === 'personal' && tribeChecked && !specificAffiliation) {
-      setAffiliationError(true)
-      return
-    }
-
     const form = formRef.current
     if (!form) return
-    const requiredFields = Array.from(
-      form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-        '[required]'
-      )
-    )
-    let firstInvalid: HTMLElement | null = null
-    let allValid = true
-    requiredFields.forEach((field) => {
-      if (!field.value.trim()) {
-        field.style.borderColor = 'red'
-        allValid = false
-        if (!firstInvalid) firstInvalid = field
-      } else {
-        field.style.borderColor = '#ddd'
-      }
-    })
-    if (!allValid) {
-      ;(firstInvalid as HTMLElement | null)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      alert(t.alert_required)
+
+    // Every rule in one place, each with a message shown beside the field it
+    // belongs to. What this replaces only asked whether a required box was
+    // non-empty — so "asdf" passed as an email address — and then raised a
+    // single alert that named no field at all.
+    const errors = validateForm()
+    setFieldErrors(errors)
+    if (Object.keys(errors).length) {
+      setErrorSeq((n) => n + 1)
       return
     }
 
@@ -593,13 +737,32 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       // unsupported type, a missing field. Showing that beats a generic
       // "try again", which an applicant can only act on by guessing.
       let reason = ''
+      let badFields: string[] = []
       try {
-        const data = (await res.json()) as { error?: unknown }
+        const data = (await res.json()) as { error?: unknown; fields?: unknown }
         if (typeof data.error === 'string') reason = data.error
+        if (Array.isArray(data.fields)) {
+          badFields = data.fields.filter((f): f is string => typeof f === 'string')
+        }
       } catch {
         /* not JSON (a proxy or gateway error) — fall back to the generic text */
       }
       console.error('Submit failed:', res.status, reason)
+
+      // A 400 from the API names the fields it rejected. Mark those instead of
+      // showing a sentence the applicant has no way to act on.
+      if (badFields.length) {
+        const msgFor = (f: string) => {
+          if (['email', 'referrerEmail', 'organizationEmail'].includes(f)) return t.err_email
+          if (['phone', 'referrerPhone', 'organizationNumber'].includes(f)) return t.err_phone
+          if (['applicantAge', 'referrerAge'].includes(f)) return t.err_age
+          if (['fullName', 'referrerFullName'].includes(f)) return t.err_name
+          return t.err_required
+        }
+        setFieldErrors(Object.fromEntries(badFields.map((f) => [f, msgFor(f)])))
+        setErrorSeq((n) => n + 1)
+        return
+      }
       alert(reason || `${t.alert_failure} (${res.status})`)
     } catch (err) {
       // Network failure, CORS, offline — nothing specific worth showing.
@@ -612,6 +775,21 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       setIsSubmitting(false)
     }
   }
+
+  // ---------- Field error rendering ----------
+  const errorProps = (
+    key: string
+  ): { 'aria-invalid'?: boolean; 'aria-describedby'?: string; className?: string } =>
+    fieldErrors[key]
+      ? { 'aria-invalid': true, 'aria-describedby': `${key}-error`, className: styles.inputError }
+      : {}
+
+  const errorText = (key: string) =>
+    fieldErrors[key] ? (
+      <p className={styles.fieldError} id={`${key}-error`} role="alert">
+        {fieldErrors[key]}
+      </p>
+    ) : null
 
   const reactId = useId();
   // ---------- Achievements block (shared between personal & org) ----------
@@ -649,9 +827,14 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 id={`title-${fieldId}`}
                 name={list === 'personal' ? 'achievementTitle[]' : 'achievementTitleOrg[]'}
                 value={a.title}
-                onChange={(e) => updateAchievement(list, a.id, { title: e.target.value })}
+                onChange={(e) => {
+                  updateAchievement(list, a.id, { title: e.target.value })
+                  clearError(`${list}Title${idx}`)
+                }}
                 required
+                {...errorProps(`${list}Title${idx}`)}
               />
+              {errorText(`${list}Title${idx}`)}
 
               <label htmlFor={`desc-${fieldId}`}>{cfg.descLabel}</label>
               <textarea
@@ -659,9 +842,14 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 name={list === 'personal' ? 'description[]' : 'descriptionOrg[]'}
                 rows={5}
                 value={a.description}
-                onChange={handleDescriptionChange(list, a.id)}
+                onChange={(e) => {
+                  handleDescriptionChange(list, a.id)(e)
+                  clearError(`${list}Desc${idx}`)
+                }}
                 required
+                {...errorProps(`${list}Desc${idx}`)}
               />
+              {errorText(`${list}Desc${idx}`)}
               <p
                 className={styles.wordCountMessage}
                 style={{ color: wcOver ? '#cb4028' : '#25ad25' }}
@@ -809,22 +997,27 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   type="text"
                   id="referrerFullName"
                   name="referrerFullName"
+                  autoComplete="name"
                   value={referrerFullName}
-                  onChange={(e) => setReferrerFullName(e.target.value)}
+                  onChange={handleTextChange(setReferrerFullName, 'referrerFullName')}
                   required={userType === 'referral'}
+                  {...errorProps('referrerFullName')}
                 />
+                {errorText('referrerFullName')}
 
                 <label htmlFor="referrerAge">{t.referrer_age}</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={3}
                   id="referrerAge"
                   name="referrerAge"
-                  min={0}
-                  max={120}
                   value={referrerAge}
-                  onChange={(e) => setReferrerAge(e.target.value)}
+                  onChange={handleAgeChange(setReferrerAge, 'referrerAge')}
                   required={userType === 'referral'}
+                  {...errorProps('referrerAge')}
                 />
+                {errorText('referrerAge')}
 
                 <label htmlFor="referrerGender">{t.referrer_gender}</label>
                 <select
@@ -840,22 +1033,28 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 <label htmlFor="referrerEmail">{t.referrer_email}</label>
                 <input
                   type="email"
+                  inputMode="email"
                   id="referrerEmail"
                   name="referrerEmail"
                   value={referrerEmail}
-                  onChange={(e) => setReferrerEmail(e.target.value)}
+                  onChange={handleTextChange(setReferrerEmail, 'referrerEmail')}
                   required={userType === 'referral'}
+                  {...errorProps('referrerEmail')}
                 />
+                {errorText('referrerEmail')}
 
                 <label htmlFor="referrerPhone">{t.referrer_phone}</label>
                 <input
                   type="tel"
+                  inputMode="tel"
                   id="referrerPhone"
                   name="referrerPhone"
                   value={referrerPhone}
-                  onChange={(e) => setReferrerPhone(e.target.value)}
+                  onChange={handlePhoneChange(setReferrerPhone, 'referrerPhone')}
                   required={userType === 'referral'}
+                  {...errorProps('referrerPhone')}
                 />
+                {errorText('referrerPhone')}
 
                 <label htmlFor="nominationreason">{t.referrer_nomination_reason}</label>
                 <textarea
@@ -864,7 +1063,9 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   value={nominationReason}
                   onChange={handleNominationChange}
                   required={userType === 'referral'}
+                  {...errorProps('nominationReason')}
                 />
+                {errorText('nominationReason')}
                 <p
                   className={styles.wordCountMessage}
                   style={{ color: nominationMessage.color }}
@@ -882,22 +1083,27 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   type="text"
                   id="fullName"
                   name="fullName"
+                  autoComplete="name"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={handleTextChange(setFullName, 'fullName')}
                   required
+                  {...errorProps('fullName')}
                 />
+                {errorText('fullName')}
 
                 <label htmlFor="applicantAge">{t.applicant_age}</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={3}
                   id="applicantAge"
                   name="applicantAge"
-                  min={0}
-                  max={120}
                   value={applicantAge}
-                  onChange={(e) => setApplicantAge(e.target.value)}
+                  onChange={handleAgeChange(setApplicantAge, 'applicantAge')}
                   required
+                  {...errorProps('applicantAge')}
                 />
+                {errorText('applicantAge')}
 
                 <label htmlFor="applicantGender">{t.applicant_gender}</label>
                 <select
@@ -913,22 +1119,30 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 <label htmlFor="email">{t.paragraph2}</label>
                 <input
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   id="email"
                   name="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleTextChange(setEmail, 'email')}
                   required
+                  {...errorProps('email')}
                 />
+                {errorText('email')}
 
                 <label htmlFor="phone">{t.paragraph3}</label>
                 <input
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   id="phone"
                   name="phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange(setPhone, 'phone')}
                   required
+                  {...errorProps('phone')}
                 />
+                {errorText('phone')}
 
                 <div className={styles.tribalSection}>
                   <label htmlFor="tribeCheckbox" className={styles.tribeCheckboxLabel}>
@@ -949,9 +1163,12 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                     className={styles.radioOptions}
                     style={{ marginTop: 10, marginLeft: 20 }}
                   >
-                    <p style={{ color: affiliationError ? '#cb4028' : undefined }}>
+                    <p
+                      id="specificAffiliation-error"
+                      className={fieldErrors.specificAffiliation ? styles.fieldError : undefined}
+                    >
                       {t.paragraph15}
-                      {affiliationError && t.required_field_suffix}
+                      {fieldErrors.specificAffiliation && t.required_field_suffix}
                     </p>
                     {/*
                       The value posted is the stable code, not the label being
@@ -970,7 +1187,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         checked={specificAffiliation === 'alsaraa'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
-                          setAffiliationError(false)
+                          clearError('specificAffiliation')
                         }}
                         required
                       />
@@ -985,7 +1202,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         checked={specificAffiliation === 'tahamah'}
                         onChange={(e) => {
                           setSpecificAffiliation(e.target.value)
-                          setAffiliationError(false)
+                          clearError('specificAffiliation')
                         }}
                         required
                       />
@@ -1021,9 +1238,11 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   id="organizationName"
                   name="organizationName"
                   value={organizationName}
-                  onChange={(e) => setOrganizationName(e.target.value)}
+                  onChange={handleTextChange(setOrganizationName, 'organizationName')}
                   required
+                  {...errorProps('organizationName')}
                 />
+                {errorText('organizationName')}
 
                 <label htmlFor="ownerName">{t.org5}</label>
                 <input
@@ -1031,29 +1250,37 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                   id="ownerName"
                   name="ownerName"
                   value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
+                  onChange={handleTextChange(setOwnerName, 'ownerName')}
                   required
+                  {...errorProps('ownerName')}
                 />
+                {errorText('ownerName')}
 
                 <label htmlFor="organizationEmail">{t.org6}</label>
                 <input
                   type="email"
+                  inputMode="email"
                   id="organizationEmail"
                   name="organizationEmail"
                   value={organizationEmail}
-                  onChange={(e) => setOrganizationEmail(e.target.value)}
+                  onChange={handleTextChange(setOrganizationEmail, 'organizationEmail')}
                   required
+                  {...errorProps('organizationEmail')}
                 />
+                {errorText('organizationEmail')}
 
                 <label htmlFor="organizationNumber">{t.org7}</label>
                 <input
                   type="tel"
+                  inputMode="tel"
                   id="organizationNumber"
                   name="organizationNumber"
                   value={organizationNumber}
-                  onChange={(e) => setOrganizationNumber(e.target.value)}
+                  onChange={handlePhoneChange(setOrganizationNumber, 'organizationNumber')}
                   required
+                  {...errorProps('organizationNumber')}
                 />
+                {errorText('organizationNumber')}
               </fieldset>
 
               <div id="organization-achievements-container">
@@ -1091,6 +1318,18 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
             </a>
           </div>
 
+          {/*
+            Why the button is greyed out, said plainly and next to it.
+            An applicant who filled in the whole form and never noticed the
+            tickbox above had nothing to go on but a dead button, and
+            reasonably concluded the site was broken.
+          */}
+          {blockedReason && !submitSuccess && (
+            <p className={styles.submitHint} id="submit-hint" role="status">
+              {blockedReason}
+            </p>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
@@ -1098,6 +1337,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
             className={styles.submitBtn}
             disabled={!isSubmitEnabled}
             aria-busy={isSubmitting}
+            aria-describedby={blockedReason ? 'submit-hint' : undefined}
             style={{
               backgroundColor: isSubmitEnabled ? '#28a745' : '#ccc',
               cursor: isSubmitEnabled ? 'pointer' : 'not-allowed',
@@ -1105,6 +1345,12 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
           >
             {isSubmitting ? t.submitting : t.paragraph14}
           </button>
+
+          {Object.keys(fieldErrors).length > 0 && (
+            <p className={styles.submitHint} role="status">
+              {t.fix_errors}
+            </p>
+          )}
         </form>
       </div>
       {submitSuccess && (

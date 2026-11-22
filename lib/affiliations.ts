@@ -27,7 +27,7 @@ export const AFFILIATIONS: Affiliation[] = [
     code: 'alsaraa',
     ar: 'السرة',
     en: 'Al-Saraa',
-    legacy: ['Al-Saraa', 'السرة'],
+    legacy: ['Al-Saraa', 'السرة', 'السراة', 'محافظة بلقرن والسراة'],
   },
   {
     code: 'tahamah',

@@ -9,6 +9,7 @@ import { uploadToGridFS } from '../services/gridfsStorage.js'
 import { User } from '../models/User.js'
 import { candidateCode } from '../services/anonymize.js'
 import { normalizeAffiliation } from '../config/affiliations.js'
+import { validateApplication, validateAchievements } from '../config/validation.js'
 
 const router = Router()
 
@@ -39,6 +40,19 @@ router.post(
 
       if (formType !== 'personal' && formType !== 'organization') {
         return res.status(400).json({ error: 'Invalid or missing formType' })
+      }
+
+      // Checked before anything is uploaded or written. The form applies the
+      // same rules, so arriving here with bad data means a page cached from
+      // before this deploy, or a request that did not come from the form at
+      // all — either way it is answered with 400 and the offending fields,
+      // not a 201 and an unusable email address in the database.
+      const badFields = validateApplication(body, formType)
+      if (badFields.length) {
+        return res.status(400).json({
+          error: 'Some details are missing or invalid. Please check the highlighted fields.',
+          fields: badFields,
+        })
       }
 
       const asArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v])
@@ -130,6 +144,9 @@ router.post(
         const descs = asArray(body['description[]'] ?? body.description)
         const uploaded = files['upload[]'] || []
 
+        const achErr = validateAchievements(titles, descs)
+        if (achErr) return res.status(400).json({ error: achErr, fields: ['achievements'] })
+
         const achievements = await buildAchievements(
           titles,
           descs,
@@ -168,6 +185,9 @@ router.post(
         const titles = asArray(body['achievementTitleOrg[]'] ?? body.achievementTitleOrg)
         const descs = asArray(body['descriptionOrg[]'] ?? body.descriptionOrg)
         const uploaded = files['uploadOrg[]'] || []
+
+        const achErr = validateAchievements(titles, descs)
+        if (achErr) return res.status(400).json({ error: achErr, fields: ['achievements'] })
 
         const achievements = await buildAchievements(
           titles,

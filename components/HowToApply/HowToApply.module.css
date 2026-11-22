@@ -221,6 +221,42 @@
   max-width: 300px;
 }
 
+/* ---- Validation feedback -------------------------------------------------
+   The form sits on navy (#1a3f6b), where the usual error red (#cb4028) reads
+   as almost black. These are the lighter tints that stay legible on it.
+
+   Every message is words as well as colour: the previous version signalled a
+   bad field only by turning its border red, which tells an applicant who
+   cannot distinguish the colour precisely nothing.
+
+   Selectors are .applyForm-prefixed so they outrank `.applyForm p`, which
+   centres text — an error belongs beside its field, not in the middle.
+   -------------------------------------------------------------------------- */
+.applyForm .fieldError {
+  color: #ffb3a7;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 6px 0 12px;
+  text-align: start;
+}
+
+.applyForm .inputError {
+  border: 2px solid #ff6b57 !important;
+  outline-color: #ff6b57;
+}
+
+/* Says why the submit button is disabled. Guidance, not an error — gold. */
+.applyForm .submitHint {
+  color: #ffd86b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 12px 0;
+  max-width: 640px;
+  text-align: start;
+}
+
 /* ===== Mobile ===== */
 @media (max-width: 768px) {
   .ndaModal {
