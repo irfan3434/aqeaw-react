@@ -192,9 +192,72 @@
   height: 15px;
 }
 
+/* --------------------------------------------------------------------------
+   Affiliation — a required choice between Al-Saraa and Tahamah.
+   Was hidden behind a checkbox that read as a label, so applicants skipped it
+   and submitted with no affiliation at all. Now always on screen.
+   -------------------------------------------------------------------------- */
+.affiliationGroup {
+  width: 100%;
+  margin: 0 0 18px;
+}
+
+/* Scoped under .applyForm to beat `.applyForm p`, which centres text at 0.8rem
+   — it is a field label, so it has to match the labels around it. */
+.applyForm .affiliationLabel {
+  margin: 0 0 4px;
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: start;
+  color: inherit;
+}
+
+/* Colour only. Reusing .fieldError here would also drop the label to 0.88rem,
+   so it shrank the moment it went invalid. Specific enough to beat it. */
+.applyForm .affiliationLabel.affiliationLabelInvalid {
+  color: #ffb3a7;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* The shared .radioOptions rules stack the dot underneath a centred label,
+   which read as decoration rather than a choice to make — tolerable while
+   these were optional and hidden, not now they are required. */
+.affiliationGroup .radioOptions label {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* .applyForm input sets width:100% for the text fields, which also stretched
+   these radios to the full row — the dot sat in the middle and its label was
+   pushed off the right edge of the form. */
+.affiliationGroup .radioOptions input[type='radio'] {
+  flex: 0 0 auto;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+  accent-color: #c4a21e;
+  cursor: pointer;
+}
+
 .radioOptions {
   margin-top: 10px;
   padding-left: 20px;
+}
+
+:global(html[lang='ar']) .radioOptions {
+  padding-left: 0;
+  padding-right: 20px;
 }
 
 .radioOptions label {

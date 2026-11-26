@@ -8,7 +8,7 @@ import { sendSubmissionNotification, sendJudgeNewApplicationNotice } from '../se
 import { uploadToGridFS } from '../services/gridfsStorage.js'
 import { User } from '../models/User.js'
 import { candidateCode } from '../services/anonymize.js'
-import { normalizeAffiliation } from '../config/affiliations.js'
+import { isValidAffiliation, normalizeAffiliation } from '../config/affiliations.js'
 import { validateApplication, validateAchievements } from '../config/validation.js'
 
 const router = Router()
@@ -172,7 +172,12 @@ router.post(
           gender: body.applicantGender,
           email: body.email,
           phone: body.phone,
-          tribeChecked: body.tribeCheckbox === 'on',
+          // Vestigial. The checkbox that set this was removed once choosing an
+          // affiliation became compulsory, so it is derived from the choice
+          // itself — otherwise the "Tribe Checked" column in the Excel export
+          // would read "No" for every new application.
+          tribeChecked:
+            body.tribeCheckbox === 'on' || isValidAffiliation(body.specificAffiliation),
           // Stored as a stable code rather than whichever translated label
           // the applicant happened to be reading. Labels posted by an older
           // form are converted here, so both spellings end up as one value.

@@ -9,6 +9,8 @@
  * Mirrors lib/formValidation.ts on the frontend, which deploys separately.
  * Keep the two in step.
  */
+import { isValidAffiliation } from './affiliations.js'
+
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/
 const PHONE_ALLOWED_RE = /[^\d+\s()\-]/
 
@@ -65,6 +67,11 @@ export function validateApplication(body, formType) {
     add('applicantGender', ['male', 'female'].includes(asText(body.applicantGender)))
     add('email', isValidEmail(body.email))
     add('phone', isValidPhone(body.phone))
+    // Every individual applicant belongs to one of the two, and the award is
+    // judged per affiliation, so an application without one cannot be placed.
+    // It used to be gated behind a checkbox nobody ticked and was never
+    // checked here at all, so most applications arrived without it.
+    add('specificAffiliation', isValidAffiliation(body.specificAffiliation))
 
     if (asText(body.userType) === 'referral') {
       add('referrerFullName', isValidName(body.referrerFullName))

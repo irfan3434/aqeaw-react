@@ -30,13 +30,27 @@ export const AFFILIATIONS = [
   },
 ]
 
-const BY_CODE = new Map(AFFILIATIONS.map((a) => [a.code, a]))
-
 /** Every stored spelling that means this affiliation, legacy ones included. */
 const BY_STORED = new Map()
 for (const a of AFFILIATIONS) {
   BY_STORED.set(a.code.toLowerCase(), a)
   for (const l of a.legacy) BY_STORED.set(l.toLowerCase(), a)
+}
+
+/**
+ * Whether an incoming value names one of the two affiliations.
+ *
+ * Deliberately more lenient than isValidAffiliation() in lib/affiliations.ts,
+ * which accepts the codes alone. The form only ever posts codes, so strictness
+ * here would cost nothing in the normal case — but a tab left open from before
+ * the codes existed still posts a label, and rejecting that would throw away a
+ * real application over a cached page. Every legacy spelling is accepted and
+ * normalizeAffiliation() stores it as the canonical code either way, so a
+ * lenient check cannot let a wrong value through to the database.
+ */
+export function isValidAffiliation(value) {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  return BY_STORED.has(raw)
 }
 
 /**

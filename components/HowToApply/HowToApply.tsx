@@ -33,6 +33,7 @@ import {
   isFilled,
   sanitizePhoneInput,
 } from '../../lib/formValidation'
+import { isValidAffiliation } from '../../lib/affiliations'
 
 // ---------- Constants ----------
 const MAX_WORDS = 400
@@ -149,6 +150,7 @@ interface Content {
   err_phone: string
   err_age: string
   err_name: string
+  err_affiliation: string
   optional_suffix: string
   nda_hint: string
   blocked_words: string
@@ -235,6 +237,7 @@ const content: Record<'en' | 'ar', Content> = {
     err_phone: 'Enter a valid phone number — digits only, 9 to 15 of them. For example 0501234567',
     err_age: 'Enter an age between 1 and 120.',
     err_name: 'Enter the full name using letters only.',
+    err_affiliation: 'Choose an affiliation — Al-Saraa or Tahamah.',
     optional_suffix: ' (optional)',
     nda_hint:
       'Tick this box to enable the Submit Application button. You cannot submit until you confirm you have read the agreement.',
@@ -320,6 +323,7 @@ const content: Record<'en' | 'ar', Content> = {
     err_phone: 'أدخل رقم جوال صحيحًا — أرقام فقط، من 9 إلى 15 رقمًا.',
     err_age: 'أدخل عمرًا بين 1 و 120.',
     err_name: 'أدخل الاسم كاملًا بالحروف فقط.',
+    err_affiliation: 'اختر الانتماء — السرة أو تهامة.',
     optional_suffix: ' (اختياري)',
     nda_hint:
       'فعّل هذا المربع ليصبح زر «تقديم الطلب» متاحًا. لا يمكن إرسال الطلب قبل تأكيد قراءة الاتفاقية.',
@@ -355,7 +359,6 @@ export default function HowToApplyPage() {
   const [applicantGender, setApplicantGender] = useState('male')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [tribeChecked, setTribeChecked] = useState(false)
   const [specificAffiliation, setSpecificAffiliation] = useState('')
 
   // One message per field, keyed by the name it is posted under so a 400 from
@@ -466,6 +469,12 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
    * function, so the three can never disagree about what counts as valid.
    */
   const validateField = (key: string, value: string): string => {
+    // Ahead of the generic required check: "This field is required" is poor
+    // guidance for a pair of radio buttons, where naming the two choices is
+    // what actually tells the applicant what to do.
+    if (key === 'specificAffiliation') {
+      return isValidAffiliation(value) ? '' : t.err_affiliation
+    }
     if (!isFilled(value)) return t.err_required
     if (key === 'fullName' || key === 'referrerFullName') {
       return isValidName(value) ? '' : t.err_name
@@ -521,8 +530,9 @@ const [orgAchievements, setOrgAchievements] = useState<Achievement[]>(() => [new
         ['email', email],
         ['phone', phone]
       )
-      // Only required once the applicant says they have an affiliation.
-      if (tribeChecked) out.push(['specificAffiliation', specificAffiliation])
+      // Always required. The award is judged per affiliation, so an
+      // application without one cannot be placed in a category.
+      out.push(['specificAffiliation', specificAffiliation])
     } else {
       out.push(
         ['organizationName', organizationName],
@@ -709,14 +719,6 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
 
 
 
-  const handleTribeToggle = (e: ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked
-    setTribeChecked(checked)
-    if (!checked) {
-      setSpecificAffiliation('')
-      clearError('specificAffiliation')
-    }
-  }
 
   // ---------- Submit ----------
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -762,10 +764,12 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
       fd.append('applicantGender', applicantGender)
       fd.append('email', email)
       fd.append('phone', phone)
-      fd.append('tribeCheckbox', tribeChecked ? 'on' : '')
-      if (tribeChecked && specificAffiliation) {
-        fd.append('specificAffiliation', specificAffiliation)
-      }
+      // tribeCheckbox is vestigial — the checkbox was removed when choosing an
+      // affiliation became compulsory. Still posted as 'on' so that a server
+      // build older than this one keeps filling its "Tribe Checked" column
+      // correctly; newer builds derive it from the affiliation instead.
+      fd.append('tribeCheckbox', 'on')
+      fd.append('specificAffiliation', specificAffiliation)
 
       // uploadIndex[] names the achievement each file belongs to. Without it
       // the server can only pair them by position, and since a file is sent
@@ -1246,32 +1250,41 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                 />
                 {errorText('phone')}
 
-                <div className={styles.tribalSection}>
-                  <label htmlFor="tribeCheckbox" className={styles.tribeCheckboxLabel}>
-                    {t.paragraph4}
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="tribeCheckbox"
-                    name="tribeCheckbox"
-                    className={styles.tribeCheckbox}
-                    checked={tribeChecked}
-                    onChange={handleTribeToggle}
-                  />
-                </div>
-
-                {tribeChecked && (
-                  <div
-                    className={styles.radioOptions}
-                    style={{ marginTop: 10, marginLeft: 20 }}
+                {/*
+                  These two used to sit behind a checkbox labelled "Select
+                  Affiliation:". Applicants read that as the label of the thing
+                  itself rather than a control to act on, left it untouched, and
+                  the options never appeared — so most applications arrived with
+                  no affiliation at all and were accepted anyway. The checkbox
+                  is gone; the choice is now always on screen and required.
+                */}
+                {/*
+                  A div with role="radiogroup" rather than a nested fieldset:
+                  .applyForm fieldset starts at opacity 0 and is only revealed
+                  when an IntersectionObserver adds .visible, and a field that
+                  must be filled in should not depend on that to be seen.
+                */}
+                <div
+                  className={styles.affiliationGroup}
+                  role="radiogroup"
+                  aria-labelledby="affiliation-label"
+                  aria-describedby={
+                    fieldErrors.specificAffiliation ? 'specificAffiliation-error' : undefined
+                  }
+                >
+                  {/* The label only changes colour; the message itself is
+                      rendered once, below the options, as every other field
+                      in this form does it. */}
+                  <p
+                    id="affiliation-label"
+                    className={`${styles.affiliationLabel} ${
+                      fieldErrors.specificAffiliation ? styles.affiliationLabelInvalid : ''
+                    }`}
                   >
-                    <p
-                      id="specificAffiliation-error"
-                      className={fieldErrors.specificAffiliation ? styles.fieldError : undefined}
-                    >
-                      {t.paragraph15}
-                      {fieldErrors.specificAffiliation && t.required_field_suffix}
-                    </p>
+                    {t.paragraph4}
+                  </p>
+
+                  <div className={styles.radioOptions}>
                     {/*
                       The value posted is the stable code, not the label being
                       read. Posting the label stored 'Al-Saraa' for an English
@@ -1293,7 +1306,7 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                         }}
                         required
                       />
-                      {t.paragraph5} 
+                      {t.paragraph5}
                     </label>
                     <label htmlFor="tahamah">
                       <input
@@ -1311,7 +1324,9 @@ const removeAchievement = (list: 'personal' | 'org', id: number) => {  // was: s
                       {t.paragraph6}
                     </label>
                   </div>
-                )}
+
+                  {errorText('specificAffiliation')}
+                </div>
               </fieldset>
 
               {/* Achievements */}

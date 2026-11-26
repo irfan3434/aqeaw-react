@@ -43,6 +43,20 @@ for (const a of AFFILIATIONS) {
   for (const l of a.legacy) BY_STORED.set(l.toLowerCase(), a)
 }
 
+const CODES = new Set<string>(AFFILIATIONS.map((a) => a.code))
+
+/**
+ * Whether a value is one of the two affiliations an applicant may choose.
+ *
+ * Deliberately strict about the codes only, unlike affiliationLabel below: this
+ * guards what goes *in*, where a legacy spelling would mean the form had posted
+ * something it no longer posts. Mirrored by isValidAffiliation() in
+ * server/src/config/affiliations.js.
+ */
+export function isValidAffiliation(value: string | undefined): boolean {
+  return CODES.has((value ?? '').trim().toLowerCase())
+}
+
 /**
  * A readable label for a stored value, in the language being displayed.
  * Values written before the codes existed are already readable labels, so an
